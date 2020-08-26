@@ -10,7 +10,7 @@ Given a spacer and your desired edits, this program will output many options for
 These components are necessary for even the most simple prime editing scheme (PE2).
 
 You may consider a PE3/PE3b knockin (KI) strategy, which typically increases efficency of KI. This requires an additional sgRNA (dubbed the PE3/PE3b guide).
-PE3 guides cannot distinquish between edited and unedited DNA, while PE3b guides are only able to bind once the first strand has been edited.
+PE3 guides cannot distinguish between edited and unedited DNA, while PE3b guides are only able to bind once the first strand has been edited.
 This program will output options for both if they exist.
 
 
