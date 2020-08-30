@@ -1,60 +1,5 @@
-''' WELCOME TO THE INPUT VERSION OF PEGasos version 6.2! '''
-
-# This program can be used to easily generate pegRNA sequences suitable for Prime Editing (Anzalone et al 2019).
-
-# PegRNAs are made up of a custom spacer, primer binding site (PBS), reverse transcriptase template (RT) as well as the standardized scaffold segment.
-# Given a spacer and your desired edits, this program will output many options for PBSs and RTs you may wish to use.
-# These components are necessary for even the most simple prime editing scheme (PE2).
-
-# You may consider a PE3/PE3b knockin (KI) strategy, which typically increases efficency of KI. This requires an additional sgRNA (dubbed the PE3/PE3b guide).
-# PE3 guides cannot distinquish between edited and unedited DNA, while PE3b guides are only able to bind once the first strand has been edited.
-# This program will output options for both if they exist.
-
-
-
-''' INSTRUCTIONS FOR USE '''
-
-### Once you run the program (in python3) you will be prompted for the following, respectively:
-
-# 1. The wildtype sequence with parentheses surrounding any deletions you'd like to make
-# 2. The sequence you'd like to insert (leave it blank if it's a deletion)
-# 3. The sequence of the spacer you've chosen.
-
-
-### Pro tips:
-
-# All sequences should be copied in as 5' to 3' and the output is to be read 5' to 3'. 
-# The program is not case sensitive.
-# If you have an unknown base in your input, use N as the placeholder. Other non-ATGC letters may result in errors.
-# The program works best with ~100-150bp on either side of the mutation site. The examples shown below are much shorter for easy reading.
-
-
-''' EXAMPLE: insertion of agcgta '''
-
-# ATGCGCTATGGCGATGCTGATATGCGCTATCGA()TTTGCTGATATGCGCTATCGGAGATGCTGAT
-# agcgta
-# GATGCTGATATGCGCTATCG
-
-''' EXAMPLE: point mutation (t->g) '''
-
-# ATGCGCTATGGCGATGCTGATATGCGCTATCGAT(t)TGCTGATATGCGCTATCGGAGATGCTGAT
-# g
-# GATGCTGATATGCGCTATCG
-
-''' EXAMPLE: deletion of TATCGA '''
-
-# ATGCGCTATGGCGATGCTGATATGCGC(tatcga)TTTGCTGATATGCGCTATCGGAGATGCTGAT
-# 
-# GATGCTGATATGCGCTATCG
-
-
-
-''' Go forth and edit! '''
-''' ~ Marilyn Steyert (with technical assistance from Nick Kostiken and direction from Ryan Richardson) '''
-
 
 import os
-
 
 # function for creating the reverse compliment strand
 def revComp(seq):
@@ -98,6 +43,7 @@ def tm(seq):
 
 
 # create reverse transcriptase template options
+############################## TODO ####################################
 """add 5 and take out key thing"""
 def createRT(mutSeq, mut, cut):
     lengthMap = {
@@ -368,21 +314,21 @@ def main():
                 print(o["rt"])
 
 
-
-
     #########################################################################################
     # CSV file writing section
     #########################################################################################
 
     outputFile = "AAAAAA.csv"
     f = open(outputFile, "w")
+    print()
+    print("CSV file will be written to:", os.getcwd() + "/" + outputFile)
 
     def writeLine(*columns):
         strings = [str(i) for i in columns]
         f.write(",".join(strings) + "\n")
 
     # Reiterate inputs
-    writeLine("INPUTS")
+    writeLine("INPUT")
     writeLine("Wildtype sequence" , wtSeq)
     writeLine("Mutation sequence" , mutSeq)
     writeLine("Spacer sequence" , spacer)
@@ -395,6 +341,7 @@ def main():
     writeLine("Edited DNA sequence" , mutSeq)
     writeLine()
 
+    writeLine("OUTPUT")
     #RT table
     writeLine("Reverse transcriptase templates*")
     writeLine("Flap Length" , "Flap G/C content" , "RT sequence")
@@ -453,47 +400,46 @@ def main():
 
     #Warnings & info
 
-    print()
-    print("SPACER")
+    writeLine("Warings & info")
+    writeLine("General")
     if delStart == cut:
-        print("Note: Spacer cuts at the mutation site. Nice!")
+        writeLine("Note: Spacer cuts at the mutation site. Nice!")
     else:
-        print("Note: Spacer cuts 5' of mutation site. Nice!")
-
+        writeLine("Note: Spacer cuts 5' of mutation site. Nice!")
 
     # spacer works for PE built upon Cas9(wt)
     wrongPAM = False
     if len(spacer) == 20 and wtFinal[cut+5] == "G" and wtFinal[cut+4] == "G":
-        print("Note: Spacer is the correct length and has a PAM site compatible with the standard PE enzyme built upon SpCas9. Nice!")
+        writeLine("Note: Spacer is the correct length and has a PAM site compatible with the standard PE enzyme built upon SpCas9. Nice!")
     if len(spacer) != 20:
-        print("Warning: Spacer is not the correct length but has a PAM site for the standard PE enzyme built upon SpCas9.")
+        writeLine("Warning: Spacer is not the correct length but has a PAM site for the standard PE enzyme built upon SpCas9.")
     if wtFinal[cut+5] != "G" or wtFinal[cut+4] != "G":
         wrongPAM = True
-        print("Warning: Spacer has an incorrect PAM site but is correct length for the standard PE enzyme built upon SpCas9.")  
+        writeLine("Warning: Spacer has an incorrect PAM site but is correct length for the standard PE enzyme built upon SpCas9.")  
 
     # cut is close enough for efficient editing
     FAR = 30
     if len(wtSeq[cut:delStart]) > FAR:
-        print("Warning: The cut site of your spacer is far from the edited region. This may reduce editing efficiency.")
+        writeLine("Warning: The cut site of your spacer is far from the edited region. This may reduce editing efficiency.")
     
     # spacer can't re-cut DNA after correct editing has occurred
     if wrongPAM == False:
         reCut = mutSeq.find(spacer)
         if reCut > 0 and wtFinal[cut+5] == "G" and wtFinal[cut+4] == "G":
-            print("Warning: Your spacer will still be able to cut your DNA after correct edits have been made. This may have deleterious effects.")
+            writeLine("Warning: Your spacer will still be able to cut your DNA after correct edits have been made. This may have deleterious effects.")
         else:
-            print("Note: Once your DNA has been edited, your spacer will not be able to cut it again. Nice! This may help reduce indels.")
+            writeLine("Note: Once your DNA has been edited, your spacer will not be able to cut it again. Nice! This may help reduce indels.")
 
-    print()
-    print("PBS and RT")
+    writeLine()
+    writeLine("PBS and RT")
 
     # Poly-T tracks are bad for pegRNA expression
     if pbsPoly == True:
-        print("Warning: Poly-T tracks of length 4 or more were found in PBS option(s), and may reduce pegRNA expression.")
+        writeLine("Warning: Poly-T tracks of length 4 or more were found in PBS option(s), and may reduce pegRNA expression.")
     if rtPoly == True:
-        print("Warning: Poly-T tracks of length 4 or more were found in RT option(s), and may reduce pegRNA expression.")
+        writeLine("Warning: Poly-T tracks of length 4 or more were found in RT option(s), and may reduce pegRNA expression.")
     if pbsPoly == False and rtPoly == False:
-        print("Note: No poly-T tracks detected in RT or PBS. Nice!")
+        writeLine("Note: No poly-T tracks detected in RT or PBS. Nice!")
 
     # RTs that end with C are NOT recommended (see Anzalone, 2019)
     rtBad = False
@@ -502,12 +448,12 @@ def main():
             rtBad = True
             break
     if rtBad == True:
-        print("Reverse transcriptase templates which are NOT RECOMMENDED because the 5' end is a C:")
+        writeLine("Reverse transcriptase templates which are NOT RECOMMENDED because the 5' end is a C:")
         for o in rtInfo:
             if o["startsWithC"] == True:
-                print(o["rt"])
-    print()
-    print("CSV file written to:", os.getcwd() + "/" + outputFile)
+                writeLine(o["rt"])
+    writeLine()
+    
     f.close()
 
 
