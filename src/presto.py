@@ -1,7 +1,17 @@
 
 import os
+import re
 
-# function for creating the reverse compliment strand
+from Bio.Seq import Seq
+from Bio.SeqUtils import MeltingTemp as mt
+
+# Constants
+CUT_TO_PAM_LENGTH = 3
+GUIDE_LENGTH = 20
+PE3B_TEST_LENGTH = GUIDE_LENGTH - 4
+TOO_FAR_FROM_CUT = 30
+
+# Function for creating the reverse compliment strand
 def revComp(seq):
     compliment = ""
     compMap = {
@@ -10,6 +20,18 @@ def revComp(seq):
         "C":"G",
         "G":"C",
         "N":"N",
+        "Y":"R",
+        "R":"Y",
+        "W":"W",
+        "S":"S",
+        "K":"M",
+        "M":"K",
+        "D":"H",
+        "V":"B",
+        "H":"D",
+        "B":"V",
+        "X":"X",
+        "-":"-",
         "(":")",
         ")":"(",
     }
@@ -18,8 +40,32 @@ def revComp(seq):
             compliment += compMap[base]
         else:
             compliment += base
-
     return compliment[::-1]
+
+
+# Function exchanging ambiguous nt letters for IUPAC equivalent as RE
+def ntToRegex(seq):
+    expression = ""
+    ambiguous = {
+        "N":".",
+        "X":".",
+        "Y":"[C,T]",
+        "R":"[A,G]",
+        "W":"[A,T]",
+        "S":"[C,G]",
+        "K":"[G,T]",
+        "M":"[A,C]",
+        "D":"[A,T,G]",
+        "V":"[A,C,G]",
+        "H":"[A,T,C]",
+        "B":"[C,G,T]",
+    }
+    for base in seq:
+        if base in ambiguous:
+            expression += ambiguous[base]
+        else:
+            expression += base
+    return rf'(?=({expression}))'
 
 
 # function calculating G/C content
@@ -29,22 +75,23 @@ def gcContent(seq):
     return int(round(gcPercent))
 
 
-# Calculate melting temperature (Tm) (formula from http://insilico.ehu.es/tm.php?formula=basic)
+#######################TODO: figure out which calculation to use ###################
+# Calculate melting temperature (Tm)
 def tm(seq):
-    gc = seq.count("C") + seq.count("G")
-    at = seq.count("A") + seq.count("T")
-    tm = 0
-    if len(seq) < 14:
-        tm = (at * 2) + (gc * 4)
-    else:
-        tm = 64.9 + 41 * (gc - 16.4) / (gc + at)
-    tm = round(tm, 1)
-    return tm
+    return mt.Tm_Wallace(Seq(seq))
+    # gc = seq.count("C") + seq.count("G")
+    # at = seq.count("A") + seq.count("T")
+    # tm = 0
+    # if len(seq) < 14:
+    #     tm = (at * 2) + (gc * 4)
+    # else:
+    #     tm = 64.9 + 41 * (gc - 16.4) / (gc + at)
+    # tm = round(tm, 1)
+    # return tm
 
 
-# create reverse transcriptase template options
-############################## TODO ####################################
-"""add 5 and take out key thing"""
+############################## TODO: add 5 and take out key thing ####################################
+# Create reverse transcriptase template options
 def createRT(mutSeq, mut, cut):
     lengthMap = {
         5: 9,
@@ -62,7 +109,7 @@ def createRT(mutSeq, mut, cut):
     for i in relevantOptions:
         rt = revComp(mutSeq[cut : (cut + len(mut) + 8 + i)])
         info = {
-            "flap length": i + 8,
+            "flapLength": i + 8,
             "rt": rt,
             "flapGC": gcContent(rt),
             "rtTM": tm(rt),
@@ -74,7 +121,7 @@ def createRT(mutSeq, mut, cut):
     return rtInfo
 
 
-# create primer binding site options
+# Create primer binding site options
 def createPBS(mutSeq, cut):
     pbsInfo = []
     for i in range(0,10):
@@ -92,24 +139,25 @@ def createPBS(mutSeq, cut):
 
 
 # Create the PE3 and PE3b guides
-def createPE3(wtSeq, mutSeq, cut):
-    PE3B_TEST_LENGTH = 18
+def createPE3(wtSeq, mutSeq, pamSeq, cut):
     rcMutSeq = revComp(mutSeq)
     rcWtSeq = revComp(wtSeq)
     cut = len(mutSeq) - cut
     pe3Info = []
-    for i in range(0, len(rcMutSeq)):
-        if rcMutSeq[i] == "G" and rcMutSeq[i-1] == "G":
-            testSeq = rcMutSeq[i - PE3B_TEST_LENGTH : i + 1]
-            info = {
-                "pamStart": i,
-                "cutPE3": i - 5,
-                "cutDiff": abs(i - 5 - cut),
-                "secondGuide": rcMutSeq[i - 22 : i - 2],
-                "rcSecondGuide": revComp(rcMutSeq[i - 22 : i - 2]),
-                "type": "pe3b" if rcWtSeq.find(testSeq) < 0 else "pe3",
-            }
-            pe3Info.append(info)
+    pams = re.finditer(ntToRegex(pamSeq), rcMutSeq)
+    for match in pams:
+        pam = match.group(1)
+        i = match.start(1)
+        testSeq = rcMutSeq[i - PE3B_TEST_LENGTH : i + len(pamSeq)]
+        info = {
+            "pamStart": i,
+            "cutPE3": i - CUT_TO_PAM_LENGTH,
+            "cutDiff": abs(i - CUT_TO_PAM_LENGTH - cut),
+            "secondGuide": rcMutSeq[i - GUIDE_LENGTH : i],
+            "rcSecondGuide": revComp(rcMutSeq[i - GUIDE_LENGTH : i]),
+            "type": "pe3b" if rcWtSeq.find(testSeq) < 0 else "pe3",
+        }
+        pe3Info.append(info)
 
     return pe3Info
 
@@ -118,11 +166,12 @@ def createPE3(wtSeq, mutSeq, cut):
 ############################################################
 # Program logic
 ############################################################
-def main():
+def main(inputs):
     # Put in sequences
-    wtSeq = "CACAACTCACTTAGCAAAGCTGCCCGCCGCCTCAGCCTAATGTTACACGGCCTTGTGACCCCTAGCCTCCCT(AAAAAAAAAAA)TAGCCATTTAAAGAGGGATGAGGTGATGCTGAAGGCCAGTTGGCA" #input("Please input your wildtype sequence: ").upper()
-    mut =  "ggctcacgtttggaagaggaactgagacgccgcttaactgaa".upper() #input("Please input your mutation sequence. For deletion, leave blank: ").upper()
-    spacer =  "CATCCCTCTTTAAATGGCTA" #input("Please input your spacer sequence: ").upper()
+    wtSeq = inputs["wildtype"].upper()
+    mut = inputs["mutation"].upper()
+    spacer = inputs["spacer"].upper()
+    pamSeq = inputs["pam"].upper()
 
     # Identify insertion and/or deletion
     [delStart, delStop] = [wtSeq.find("("), wtSeq.find(")")]
@@ -131,7 +180,6 @@ def main():
     mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop+1:len(wtSeq)]
     # Remove parentheses from user input wt sequence
     wtFinal = wtSeq[0:delStart] + deletion + wtSeq[delStop+1:len(wtSeq)]
-    ##############################################wtFinal = wtSeq.translate({ord(i):None for i in '()'})
     cut = wtFinal.find(spacer)
 
     isTopStrand = True
@@ -147,7 +195,7 @@ def main():
         cut = wtFinal.find(spacer)
         if cut < 0:
             print("ERROR: Spacer sequence not found")
-            exit()
+            return {errors: ["Spacer sequence not found"]}
     # Cas9 cuts 3 positions from the 3' end of the spacer
     cut += len(spacer) - 3
     wtSeq = wtFinal
@@ -155,17 +203,193 @@ def main():
     # Ensure that the cut site is 5' of the mutation
     if cut > delStart:
         print("ERROR: The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again.")
-        exit()
+        return {errors: ["The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."]}
 
     # Create components of pegRNA
     rtInfo = createRT(mutSeq, mut, cut)
     pbsInfo = createPBS(mutSeq, cut)
-    pe3Info = createPE3(wtSeq, mutSeq, cut)
+    pe3Info = createPE3(wtSeq, mutSeq, pamSeq, cut)
+
+    # Adjust values for printing
+    if isTopStrand == False:
+        mutSeq = revComp(mutSeq)
+        mut = revComp(mut)
+        deletion = revComp(deletion)
+        wtSeq = revComp(wtSeq)
+        wtFinal = revComp(wtFinal)
+
+    # Errors and Warnings
+    errors=[]
+    warnings={
+        "general": [],
+        "pegRna": [],
+        "pe3": [],
+    }
+
+    # spacer warnings
+    if len(spacer) != GUIDE_LENGTH:
+        warnings["general"].append("Spacer is not the correct length.")
+    if wtFinal[cut+CUT_TO_PAM_LENGTH : cut+CUT_TO_PAM_LENGTH+len(pamSeq)] != pamSeq:
+        warnings["general"].append("Spacer has an incorrect PAM site.")
+    ###############TODO: use mutSeq and adjust pam stuff#############################
+    '''
+    else:
+        # spacer can't re-cut DNA after correct editing has occurred
+        reCut = mutSeq.find(spacer)
+        if reCut > 0 and wtFinal[cut+5] == "G" and wtFinal[cut+4] == "G":
+            warnings.append("Your spacer will still be able to cut your DNA after correct edits have been made. This may have deleterious effects.")
+        else:
+            warnings.append("Note: Once your DNA has been edited, your spacer will not be able to cut it again. Nice! This may help reduce indels.")
+    '''
+
+    # cut is close enough for efficient editing
+    if len(wtSeq[cut:delStart]) > TOO_FAR_FROM_CUT:
+        warnings.general.append("The cut site of your spacer is far from the edited region. This may reduce editing efficiency.")
+
+    # PE3 warnings
+    if pe3Info == []:
+        warnings.pe3.append("No PAM sites on mutant strand! Try inputting a longer strech of wildytpe sequence.")
+    if len(list(filter(lambda o: o["type"] == "pe3", pe3Info))) == 0:
+        warnings.pe3.append("There are no PE3 guides. Try inputting a longer strech of wildytpe sequence.")
+    if len(list(filter(lambda o: o["type"] == "pe3b", pe3Info))) == 0:
+        warnings.pe3.append("There are no PE3b guides. If you'd like to use a PE3b strategy, you may be able to add a silent mutation which adds a PAM site in the region spanned by the RT.")
+
+    # Poly-T tracks are bad for pegRNA expression
+    for o in pbsInfo:
+        if o["pbsPolyT"] == True:
+            warnings["pegRna"].append("Poly-T tracks of length 4 or more were found in PBS option(s), and may reduce pegRNA expression.")
+            break
+    # RTs that end with C are NOT recommended (see Anzalone, 2019)
+    for o in rtInfo:
+        if o["startsWithC"] == True:
+            warnings["pegRna"].append("RT template is NOT RECOMMENDED because 5' end is a C: " + o["rt"])
+    for o in rtInfo:
+        if o["rtPolyT"] == True:
+            warnings["pegRna"].append("Poly-T tracks of length 4 or more were found in RT option(s), and may reduce pegRNA expression.")
+            break
+
+    # Returned values
+    return {
+        "spacerMatchesOn": "top" if isTopStrand else "bottom",
+        "wildtypeSequence": wtFinal,
+        "editedSequence": mutSeq,
+        "protospacerAdjacentMotif": pamSeq,
+        "insertion": mut,
+        "deletion": deletion,
+        "spacer": spacer,
+        "spacerCutIndex": cut,
+        "primeEditing3Guides": pe3Info,
+        "reverseTranscriptaseTemplates": rtInfo,
+        "primerBindingSites": pbsInfo,
+        "errors": errors,
+        "warnings": warnings,
+    }
 
 
+def writeCsvFile(values):
+    outputFile = "OUTPUT.csv"
+    f = open(outputFile, "w")
+    print("CSV file will be written to:", os.getcwd() + "/" + outputFile)
+
+    def writeLine(*columns):
+        strings = [str(i) for i in columns]
+        f.write(",".join(strings) + "\n")
+        print(" ".join(strings))
+
+    # Reiterate inputs
+    writeLine("INPUT")
+    writeLine("Wildtype sequence", values["wildtypeSequence"])
+    writeLine("Mutation", values["insertion"])
+    writeLine("Spacer sequence", values["spacer"])
+    # Abreviated basic outputs
+    writeLine("Spacer matches on", values["spacerMatchesOn"])
+    writeLine("Edited DNA sequence" , values["editedSequence"])
+    writeLine()
+
+    writeLine()
+    writeLine("OUTPUT")
+    # RT table
+    writeLine("Reverse transcriptase templates")
+    writeLine("Flap Length" , "Flap G/C content" , "RT sequence")
+    for o in values["reverseTranscriptaseTemplates"]:
+        if o["startsWithC"] == False:
+            writeLine(str(o["flapLength"]) , str(o["flapGC"]) , o["rt"])
+    writeLine()
+
+    # PBS table
+    writeLine("Primer binding sites")
+    writeLine("Length" , "G/C content" , "Tm" , "PBS sequence")
+    for o in values["primerBindingSites"]:
+        writeLine(str(o["length"]) , str(o["pbsGC"]), str(o["pbsTM"]), o["pbs"])
+    writeLine()
+
+    # PE3 table
+    pe3 = []
+    pe3b = []
+    for o in values["primeEditing3Guides"]:
+        if o["type"] == "pe3":
+            pe3.append(o)
+        elif o["type"] == "pe3b":
+            pe3b.append(o)
+    # Print pe3 guides
+    if pe3 != []:
+        writeLine("PE3 guides")
+        writeLine( "Cut index" , "Distance between spacer and PE3 guide cut sites", "PE3 guide")
+        for o in pe3:
+            if o["pamStart"] >= GUIDE_LENGTH + CUT_TO_PAM_LENGTH:
+                writeLine(o["cutPE3"],  o["cutDiff"], o["secondGuide"])
+    writeLine()
+    # Print pe3b guides
+    if pe3b != []:
+        writeLine("PE3b guides")
+        writeLine("Cut index", "PE3b guide")
+        for o in pe3b:
+            if o["pamStart"] >= GUIDE_LENGTH + CUT_TO_PAM_LENGTH:
+                writeLine(o["cutPE3"], o["secondGuide"])
+    writeLine()
+
+    # Print general warnings
+    if len(values["warnings"]["general"]) > 0:
+        writeLine("General warnings:")
+        for warning in values["warnings"]["general"]:
+            writeLine("", warning)
+
+    # Print pe3 warnings
+    writeLine()
+    if len(values["warnings"]["pe3"]) > 0:
+        writeLine("PE3/b warnings:")
+        for warning in values["warnings"]["pe3"]:
+            writeLine("", warning)
+
+    # Print peg warnings
+    writeLine()
+    if len(values["warnings"]["pegRna"]) > 0:
+        writeLine("pegRNA warnings:")
+        for warning in values["warnings"]["pegRna"]:
+            writeLine("", warning)
+
+    f.close()
 
 
+if __name__ == "__main__":
+    # Command line input
+    #wt = input("Please input your wildtype sequence: ").upper()
+    #mut = input("Please input your mutation sequence. For deletion, leave blank: ").upper()
+    #spacer = input("Please input your spacer sequence: ").upper()
+    #pam = input("Please input your spacer sequence: ").upper()
 
+    # Input object
+    inputs = {
+        "wildtype": "CACAACTCACTTAGCAAAGCTGCCCGCCGCCTCAGCCTAATGTTACACGGCCTTGTGACCCCTAGCCTCCCTGGG(AAAAAAAAAAA)CCCGTAGCCATTTAAAGAGGGATGAGGTGATGCTGAAGGCCAGTTGGCA", 
+        "mutation": "ggctcacgtttggaagaggaactgagacgccgcttaactgaa",
+        "spacer": "CATCCCTCTTTAAATGGCTA",
+        "pam": "NGG"
+    }
+    values = main(inputs)
+    writeCsvFile(values)
+
+
+'''
     #########################################################################################
     # Print Section
     #########################################################################################
@@ -312,152 +536,4 @@ def main():
         for o in rtInfo:
             if o["startsWithC"] == True:
                 print(o["rt"])
-
-
-    #########################################################################################
-    # CSV file writing section
-    #########################################################################################
-
-    outputFile = "AAAAAA.csv"
-    f = open(outputFile, "w")
-    print()
-    print("CSV file will be written to:", os.getcwd() + "/" + outputFile)
-
-    def writeLine(*columns):
-        strings = [str(i) for i in columns]
-        f.write(",".join(strings) + "\n")
-
-    # Reiterate inputs
-    writeLine("INPUT")
-    writeLine("Wildtype sequence" , wtSeq)
-    writeLine("Mutation sequence" , mutSeq)
-    writeLine("Spacer sequence" , spacer)
-    writeLine()
-    #Abreviated basic outputs
-    if isTopStrand:
-        writeLine("Spacer matches on top strand.")
-    else:
-        writeLine("Spacer matches bottom strand.")
-    writeLine("Edited DNA sequence" , mutSeq)
-    writeLine()
-
-    writeLine("OUTPUT")
-    #RT table
-    writeLine("Reverse transcriptase templates*")
-    writeLine("Flap Length" , "Flap G/C content" , "RT sequence")
-    rtPoly = False
-    for o in rtInfo:
-        if o["startsWithC"] == False:
-            writeLine(str(o["flap length"]) , str(o["flapGC"]) , o["rt"])
-            if o["rtPolyT"] == True:
-                rtPoly = True
-    writeLine("*In RT \"flap\" refers to the nt of the edited strand that hybridize to the un-edited strand.")
-    writeLine()
-
-    #PBS table
-    writeLine("Primer binding sites")
-    writeLine("Length" , "G/C content" , "Tm" , "PBS sequence")
-    pbsPoly = False
-    for o in pbsInfo:
-        writeLine(str(o["length"]) , str(o["pbsGC"]), str(o["pbsTM"]), o["pbs"])
-    writeLine()
-
-
-    #PE3 table
-    if pe3Info == []:
-        writeLine("No PAM sites on mutant strand! Try inputting a longer strech of wildytpe sequence.")
-        writeLine()
-    else:
-        pe3 = []
-        pe3b = []
-        for o in pe3Info:
-            if o["type"] == "pe3":
-                pe3.append(o)
-            elif o["type"] == "pe3b":
-                pe3b.append(o)
-
-        if pe3 == []:
-            writeLine("There are no PE3 guides. Try inputting a longer strech of wildytpe sequence.")
-        else:
-            writeLine("PE3 guides")
-            writeLine("PE3 guide" , "Cut index" , "Distance between spacer and PE3 guide cut sites")
-            for o in pe3:
-                if o["pamStart"] >= 23:
-                    writeLine(o["secondGuide"],  o["cutPE3"],  o["cutDiff"])
-        writeLine()
-
-        if pe3b == []:
-            writeLine("There are no PE3b guides.")
-            writeLine("If you'd like to use a PE3b strategy, you may be able to add a silent mutation which adds a PAM site in the region spanned by the RT")
-            writeLine()
-        else:
-            writeLine("PE3b guides")
-            writeLine("PE3b guide" , "Cut index")
-            for o in pe3b:
-                if o["pamStart"] >= 23:
-                    writeLine(o["secondGuide"],  o["cutPE3"])
-        writeLine()
-
-    #Warnings & info
-
-    writeLine("Warings & info")
-    writeLine("General")
-    if delStart == cut:
-        writeLine("Note: Spacer cuts at the mutation site. Nice!")
-    else:
-        writeLine("Note: Spacer cuts 5' of mutation site. Nice!")
-
-    # spacer works for PE built upon Cas9(wt)
-    wrongPAM = False
-    if len(spacer) == 20 and wtFinal[cut+5] == "G" and wtFinal[cut+4] == "G":
-        writeLine("Note: Spacer is the correct length and has a PAM site compatible with the standard PE enzyme built upon SpCas9. Nice!")
-    if len(spacer) != 20:
-        writeLine("Warning: Spacer is not the correct length but has a PAM site for the standard PE enzyme built upon SpCas9.")
-    if wtFinal[cut+5] != "G" or wtFinal[cut+4] != "G":
-        wrongPAM = True
-        writeLine("Warning: Spacer has an incorrect PAM site but is correct length for the standard PE enzyme built upon SpCas9.")  
-
-    # cut is close enough for efficient editing
-    FAR = 30
-    if len(wtSeq[cut:delStart]) > FAR:
-        writeLine("Warning: The cut site of your spacer is far from the edited region. This may reduce editing efficiency.")
-    
-    # spacer can't re-cut DNA after correct editing has occurred
-    if wrongPAM == False:
-        reCut = mutSeq.find(spacer)
-        if reCut > 0 and wtFinal[cut+5] == "G" and wtFinal[cut+4] == "G":
-            writeLine("Warning: Your spacer will still be able to cut your DNA after correct edits have been made. This may have deleterious effects.")
-        else:
-            writeLine("Note: Once your DNA has been edited, your spacer will not be able to cut it again. Nice! This may help reduce indels.")
-
-    writeLine()
-    writeLine("PBS and RT")
-
-    # Poly-T tracks are bad for pegRNA expression
-    if pbsPoly == True:
-        writeLine("Warning: Poly-T tracks of length 4 or more were found in PBS option(s), and may reduce pegRNA expression.")
-    if rtPoly == True:
-        writeLine("Warning: Poly-T tracks of length 4 or more were found in RT option(s), and may reduce pegRNA expression.")
-    if pbsPoly == False and rtPoly == False:
-        writeLine("Note: No poly-T tracks detected in RT or PBS. Nice!")
-
-    # RTs that end with C are NOT recommended (see Anzalone, 2019)
-    rtBad = False
-    for o in rtInfo:
-        if o["startsWithC"] == True:
-            rtBad = True
-            break
-    if rtBad == True:
-        writeLine("Reverse transcriptase templates which are NOT RECOMMENDED because the 5' end is a C:")
-        for o in rtInfo:
-            if o["startsWithC"] == True:
-                writeLine(o["rt"])
-    writeLine()
-    
-    f.close()
-
-
-
-
-if __name__ == "__main__":
-    main()
+'''
