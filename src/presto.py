@@ -105,13 +105,14 @@ def createRT(mutSeq, mut, cut):
         if len(mut) <= length:
             relevantOptions = range(0, num)
             break
-
+#####################TODO: isDefault######################
     rtInfo = []
     for i in relevantOptions:
         rt = revComp(mutSeq[cut : (cut + len(mut) + 8 + i)])
         info = {
             "flapLength": i + 8,
             "rt": rt,
+            "isDefault": False,
             "flapGC": gcContent(rt),
             "rtTM": tm(rt),
             "startsWithC": rt[0] == "C",
@@ -123,13 +124,14 @@ def createRT(mutSeq, mut, cut):
 
 
 # Create primer binding site options
-def createPBS(mutSeq, cut):
+def createPBS(mutSeq, cut, pbsRange):
     pbsInfo = []
-    for i in range(0,10):
-        pbs = revComp(mutSeq[(cut - 8 - i) : cut])
+    for i in range(pbsRange["start"], pbsRange["stop"]):
+        pbs = revComp(mutSeq[(cut - i) : cut])
         info = {
-            "length": i + 8,
+            "length": i,
             "pbs": pbs,
+            "isDefault": len(pbs) == 13,
             "pbsGC": gcContent(pbs),
             "pbsTM": tm(pbs),
             "pbsPolyT": pbs.find("TTTT") >= 0 or pbs.find("AAAA") >= 0
@@ -182,7 +184,9 @@ def main(inputs):
     wtSeq = inputs["wildtype"].upper()
     mut = inputs["mutation"].upper()
     spacer = inputs["spacer"].upper()
+    # Advanced
     pamSeq = inputs["pam"].upper()
+    pbsRange = inputs["pbsRange"]
 
     # Identify insertion and/or deletion
     [delStart, delStop] = [wtSeq.find("("), wtSeq.find(")")]
@@ -218,7 +222,7 @@ def main(inputs):
 
     # Create components of pegRNA
     rtInfo = createRT(mutSeq, mut, cut)
-    pbsInfo = createPBS(mutSeq, cut)
+    pbsInfo = createPBS(mutSeq, cut, pbsRange)
     pe3Info = createPE3(wtSeq, mutSeq, pamSeq, cut)
     pamInfo = checkPam(wtSeq, mutSeq, pamSeq, cut)
 
@@ -322,9 +326,9 @@ def writeCsvFile(values):
 
     # PBS table
     writeLine("Primer binding sites")
-    writeLine("Length" , "G/C content" , "Tm" , "PBS sequence")
+    writeLine("Length", "G/C content", "Tm", "Default", "PBS sequence")
     for o in values["primerBindingSites"]:
-        writeLine(str(o["length"]) , str(o["pbsGC"]), str(o["pbsTM"]), o["pbs"])
+        writeLine(str(o["length"]) , str(o["pbsGC"]), str(o["pbsTM"]), ("Yes" if o["isDefault"] else ""), o["pbs"])
     writeLine()
 
     # PE3 table
@@ -388,7 +392,9 @@ if __name__ == "__main__":
         "wildtype": "CACAACTCACTTAGCAAAGCTGCCCGCCGCCTCAGCCTAATGTTACACGGCCTTGTGACCCCTAGCCTCCCTGGG(AAAAAAAAAAA)CCCTAGCCATTTAAAGAGGGATGAGGTGATGCTGAAGGCCAGTTGGCA", 
         "mutation": "ggctcacgtttggaagaggaactgagacgccgcttaactgaa",
         "spacer": "CATCCCTCTTTAAATGGCTA",
-        "pam": "NGG"
+        # Advanced
+        "pam": "NGG",
+        "pbsRange": {"start":8, "stop":18},
     }
     values = main(inputs)
     writeCsvFile(values)
