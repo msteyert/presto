@@ -10,59 +10,60 @@ CUT_TO_PAM_LENGTH = 3
 GUIDE_LENGTH = 20
 PE3B_TEST_LENGTH = GUIDE_LENGTH - 4
 TOO_FAR_FROM_CUT = 30
+COMPLEMENT_MAP = {
+    "A":"T",
+    "T":"A",
+    "C":"G",
+    "G":"C",
+    "N":"N",
+    "Y":"R",
+    "R":"Y",
+    "W":"W",
+    "S":"S",
+    "K":"M",
+    "M":"K",
+    "D":"H",
+    "V":"B",
+    "H":"D",
+    "B":"V",
+    "X":"X",
+    "-":"-",
+    "(":")",
+    ")":"(",
+}
+AMBIGUOUS_BASES = {
+    "N": ".",
+    "X": ".",
+    "Y": "[C,T]",
+    "R": "[A,G]",
+    "W": "[A,T]",
+    "S": "[C,G]",
+    "K": "[G,T]",
+    "M": "[A,C]",
+    "D": "[A,T,G]",
+    "V": "[A,C,G]",
+    "H": "[A,T,C]",
+    "B": "[C,G,T]",
+}
 
-# Function for creating the reverse compliment strand
+
+# Function for creating the reverse complement strand
 def revComp(seq):
-    compliment = ""
-    compMap = {
-        "A":"T",
-        "T":"A",
-        "C":"G",
-        "G":"C",
-        "N":"N",
-        "Y":"R",
-        "R":"Y",
-        "W":"W",
-        "S":"S",
-        "K":"M",
-        "M":"K",
-        "D":"H",
-        "V":"B",
-        "H":"D",
-        "B":"V",
-        "X":"X",
-        "-":"-",
-        "(":")",
-        ")":"(",
-    }
+    complement = ""
     for base in seq:
-        if base in compMap:
-            compliment += compMap[base]
+        if base in COMPLEMENT_MAP:
+            complement += COMPLEMENT_MAP[base]
         else:
-            compliment += base
-    return compliment[::-1]
+            complement += base
+    return complement[::-1]
 
 
 # Function exchanging ambiguous nt letters for IUPAC equivalent as RE
 def ntToRegex(seq):
     expression = ""
-    ambiguous = {
-        "N":".",
-        "X":".",
-        "Y":"[C,T]",
-        "R":"[A,G]",
-        "W":"[A,T]",
-        "S":"[C,G]",
-        "K":"[G,T]",
-        "M":"[A,C]",
-        "D":"[A,T,G]",
-        "V":"[A,C,G]",
-        "H":"[A,T,C]",
-        "B":"[C,G,T]",
-    }
     for base in seq:
-        if base in ambiguous:
-            expression += ambiguous[base]
+        if base in AMBIGUOUS_BASES:
+            expression += AMBIGUOUS_BASES[base]
         else:
             expression += base
     return rf'(?=({expression}))'
@@ -162,6 +163,16 @@ def createPE3(wtSeq, mutSeq, pamSeq, cut):
     return pe3Info
 
 
+# Check that PAM is correct & that it doesn't exist in mutSeq
+def checkPam(wtSeq, mutSeq, pamSeq, cut):
+    pamCheck = wtSeq[cut+CUT_TO_PAM_LENGTH : cut+CUT_TO_PAM_LENGTH+len(pamSeq)]
+    pamCutCheck = wtSeq[cut : cut+CUT_TO_PAM_LENGTH] + pamSeq
+    mutCutCheck = mutSeq[cut : cut+CUT_TO_PAM_LENGTH+len(pamSeq)]
+    return {
+        "wrongSpacer": not re.match(ntToRegex(pamSeq), pamCheck),
+        "reCutOccurs": re.match(ntToRegex(pamCutCheck), mutCutCheck),
+    }
+
 
 ############################################################
 # Program logic
@@ -196,8 +207,8 @@ def main(inputs):
         if cut < 0:
             print("ERROR: Spacer sequence not found")
             return {errors: ["Spacer sequence not found"]}
-    # Cas9 cuts 3 positions from the 3' end of the spacer
-    cut += len(spacer) - 3
+
+    cut += len(spacer) - CUT_TO_PAM_LENGTH
     wtSeq = wtFinal
 
     # Ensure that the cut site is 5' of the mutation
@@ -209,6 +220,7 @@ def main(inputs):
     rtInfo = createRT(mutSeq, mut, cut)
     pbsInfo = createPBS(mutSeq, cut)
     pe3Info = createPE3(wtSeq, mutSeq, pamSeq, cut)
+    pamInfo = checkPam(wtSeq, mutSeq, pamSeq, cut)
 
     # Adjust values for printing
     if isTopStrand == False:
@@ -216,7 +228,6 @@ def main(inputs):
         mut = revComp(mut)
         deletion = revComp(deletion)
         wtSeq = revComp(wtSeq)
-        wtFinal = revComp(wtFinal)
 
     # Errors and Warnings
     errors=[]
@@ -226,33 +237,25 @@ def main(inputs):
         "pe3": [],
     }
 
-    # spacer warnings
+    # Spacer warnings
     if len(spacer) != GUIDE_LENGTH:
         warnings["general"].append("Spacer is not the correct length.")
-    if wtFinal[cut+CUT_TO_PAM_LENGTH : cut+CUT_TO_PAM_LENGTH+len(pamSeq)] != pamSeq:
+    if pamInfo["wrongSpacer"]:
         warnings["general"].append("Spacer has an incorrect PAM site.")
-    ###############TODO: use mutSeq and adjust pam stuff#############################
-    '''
-    else:
-        # spacer can't re-cut DNA after correct editing has occurred
-        reCut = mutSeq.find(spacer)
-        if reCut > 0 and wtFinal[cut+5] == "G" and wtFinal[cut+4] == "G":
-            warnings.append("Your spacer will still be able to cut your DNA after correct edits have been made. This may have deleterious effects.")
-        else:
-            warnings.append("Note: Once your DNA has been edited, your spacer will not be able to cut it again. Nice! This may help reduce indels.")
-    '''
+    if pamInfo["reCutOccurs"]:
+        warnings["general"].append("Spacer will be able to nick mutant DNA. This may have deleterious effects.")
 
-    # cut is close enough for efficient editing
+    # Cut is close enough for efficient editing
     if len(wtSeq[cut:delStart]) > TOO_FAR_FROM_CUT:
         warnings.general.append("The cut site of your spacer is far from the edited region. This may reduce editing efficiency.")
 
     # PE3 warnings
     if pe3Info == []:
-        warnings.pe3.append("No PAM sites on mutant strand! Try inputting a longer strech of wildytpe sequence.")
+        warnings["pe3"].append("No PAM sites on mutant strand! Try inputting a longer strech of wildytpe sequence.")
     if len(list(filter(lambda o: o["type"] == "pe3", pe3Info))) == 0:
-        warnings.pe3.append("There are no PE3 guides. Try inputting a longer strech of wildytpe sequence.")
+        warnings["pe3"].append("There are no PE3 guides. Try inputting a longer strech of wildytpe sequence.")
     if len(list(filter(lambda o: o["type"] == "pe3b", pe3Info))) == 0:
-        warnings.pe3.append("There are no PE3b guides. If you'd like to use a PE3b strategy, you may be able to add a silent mutation which adds a PAM site in the region spanned by the RT.")
+        warnings["pe3"].append("There are no PE3b guides. If you'd like to use a PE3b strategy, you may be able to add a silent mutation which adds a PAM site in the region spanned by the RT.")
 
     # Poly-T tracks are bad for pegRNA expression
     for o in pbsInfo:
@@ -271,7 +274,7 @@ def main(inputs):
     # Returned values
     return {
         "spacerMatchesOn": "top" if isTopStrand else "bottom",
-        "wildtypeSequence": wtFinal,
+        "wildtypeSequence": wtSeq,
         "editedSequence": mutSeq,
         "protospacerAdjacentMotif": pamSeq,
         "insertion": mut,
@@ -280,6 +283,7 @@ def main(inputs):
         "spacerCutIndex": cut,
         "primeEditing3Guides": pe3Info,
         "reverseTranscriptaseTemplates": rtInfo,
+        "spacerPamInfo": pamInfo,
         "primerBindingSites": pbsInfo,
         "errors": errors,
         "warnings": warnings,
@@ -350,20 +354,21 @@ def writeCsvFile(values):
 
     # Print general warnings
     if len(values["warnings"]["general"]) > 0:
+        writeLine()
         writeLine("General warnings:")
         for warning in values["warnings"]["general"]:
             writeLine("", warning)
 
     # Print pe3 warnings
-    writeLine()
     if len(values["warnings"]["pe3"]) > 0:
+        writeLine()
         writeLine("PE3/b warnings:")
         for warning in values["warnings"]["pe3"]:
             writeLine("", warning)
 
     # Print peg warnings
-    writeLine()
     if len(values["warnings"]["pegRna"]) > 0:
+        writeLine()
         writeLine("pegRNA warnings:")
         for warning in values["warnings"]["pegRna"]:
             writeLine("", warning)
@@ -380,7 +385,7 @@ if __name__ == "__main__":
 
     # Input object
     inputs = {
-        "wildtype": "CACAACTCACTTAGCAAAGCTGCCCGCCGCCTCAGCCTAATGTTACACGGCCTTGTGACCCCTAGCCTCCCTGGG(AAAAAAAAAAA)CCCGTAGCCATTTAAAGAGGGATGAGGTGATGCTGAAGGCCAGTTGGCA", 
+        "wildtype": "CACAACTCACTTAGCAAAGCTGCCCGCCGCCTCAGCCTAATGTTACACGGCCTTGTGACCCCTAGCCTCCCTGGG(AAAAAAAAAAA)CCCTAGCCATTTAAAGAGGGATGAGGTGATGCTGAAGGCCAGTTGGCA", 
         "mutation": "ggctcacgtttggaagaggaactgagacgccgcttaactgaa",
         "spacer": "CATCCCTCTTTAAATGGCTA",
         "pam": "NGG"
@@ -400,7 +405,6 @@ if __name__ == "__main__":
         mut = revComp(mut)
         deletion = revComp(deletion)
         wtSeq = revComp(wtSeq)
-        wtFinal = revComp(wtFinal)
     print()
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     print("Insertion detected:", mut, "( Insertion length:", len(mut), ")")
@@ -415,7 +419,7 @@ if __name__ == "__main__":
         print("Cut site in wildtype seq:" , wtSeq[0 : len(wtSeq)-cut] , "|" , wtSeq[len(wtSeq)-cut: len(wtSeq)])
         print("     Cut site in mut seq:" , mutSeq[0 : len(mutSeq)-cut] , "|" , mutSeq[len(mutSeq)-cut: len(mutSeq)])
     print()
-    print("           Wt seq final :", wtFinal)
+    print("           Wt seq final :", wtSeq)
     print("    Mutated DNA sequence:", mutSeq)
     
     print()
@@ -493,11 +497,11 @@ if __name__ == "__main__":
 
     # spacer works for PE built upon Cas9(wt)
     wrongPAM = False
-    if len(spacer) == 20 and wtFinal[cut+5] == "G" and wtFinal[cut+4] == "G":
+    if len(spacer) == 20 and wtSeq[cut+5] == "G" and wtSeq[cut+4] == "G":
         print("Note: Spacer is the correct length and has a PAM site compatible with the standard PE enzyme built upon SpCas9. Nice!")
     if len(spacer) != 20:
         print("Warning: Spacer is not the correct length but has a PAM site for the standard PE enzyme built upon SpCas9.")
-    if wtFinal[cut+5] != "G" or wtFinal[cut+4] != "G":
+    if wtSeq[cut+5] != "G" or wtSeq[cut+4] != "G":
         wrongPAM = True
         print("Warning: Spacer has an incorrect PAM site but is correct length for the standard PE enzyme built upon SpCas9.")  
 
@@ -509,7 +513,7 @@ if __name__ == "__main__":
     # spacer can't re-cut DNA after correct editing has occurred
     if wrongPAM == False:
         reCut = mutSeq.find(spacer)
-        if reCut > 0 and wtFinal[cut+5] == "G" and wtFinal[cut+4] == "G":
+        if reCut > 0 and wtSeq[cut+5] == "G" and wtSeq[cut+4] == "G":
             print("Warning: Your spacer will still be able to cut your DNA after correct edits have been made. This may have deleterious effects.")
         else:
             print("Note: Once your DNA has been edited, your spacer will not be able to cut it again. Nice! This may help reduce indels.")
