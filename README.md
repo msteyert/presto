@@ -1,4 +1,5 @@
 # presto
+
 a pegRNA design tool
 
 ## WELCOME TO PRESTO!
@@ -13,9 +14,13 @@ You may consider a PE3/PE3b knockin (KI) strategy, which typically increases eff
 PE3 guides cannot distinguish between edited and unedited DNA, while PE3b guides are only able to bind once the first strand has been edited.
 This program will output options for both if they exist.
 
-
-
 ## INSTRUCTIONS FOR USE
+
+To run the program from the command line use the following
+
+```python
+python src/cli/presto.py
+```
 
 Once you run the program (in python3) you will be prompted for the following, respectively:
 
@@ -23,14 +28,12 @@ Once you run the program (in python3) you will be prompted for the following, re
 2. The sequence you'd like to insert (leave it blank if it's a deletion)
 3. The sequence of the spacer you've chosen.
 
-
 Pro tips:
 
-All sequences should be copied in as 5' to 3' and the output is to be read 5' to 3'. 
+All sequences should be copied in as 5' to 3' and the output is to be read 5' to 3'.
 The program is not case sensitive.
 If you have an unknown base in your input, use N as the placeholder. Other non-ATGC letters may result in errors.
 The program works best with ~100-150bp on either side of the mutation site. The examples shown below are much shorter for easy reading.
-
 
 ## EXAMPLE: insertion of agcgta
 
@@ -46,6 +49,6 @@ GATGCTGATATGCGCTATCG
 
 ## EXAMPLE: deletion of TATCGA
 
-ATGCGCTATGGCGATGCTGATATGCGC(tatcga)TTTGCTGATATGCGCTATCGGAGATGCTGAT  
-  
+ATGCGCTATGGCGATGCTGATATGCGC(tatcga)TTTGCTGATATGCGCTATCGGAGATGCTGAT
+
 GATGCTGATATGCGCTATCG
