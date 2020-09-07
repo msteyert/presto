@@ -1,23 +1,17 @@
 from fastapi import FastAPI, Request
-from pydantic import BaseModel
-from pegInput import (
-    clean_sequence,
+from src.web.pegInput import main
+from src.core.sequence_utils import (
     createPBS,
+    createRT,
+    clean_sequence,
     create_mutSeq,
     find_cas9_cut,
-    main,
-    createRT,
 )
 from fastapi.responses import PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-
-
-class PegInput(BaseModel):
-    wtSeq: str
-    mut: str
-    spacer: str
+from src.web.models import PegInput
 
 
 app = FastAPI()
@@ -32,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="ui/build/static"), name="static")
+app.mount("/static", StaticFiles(directory="src/web/ui/build/static"), name="static")
 templates = Jinja2Templates(directory="ui/build")
 
 

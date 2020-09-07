@@ -1,0 +1,144 @@
+"main program logic for presto"
+from src.core.sequence_utils import (
+    GUIDE_LENGTH,
+    CUT_TO_PAM_LENGTH,
+    TOO_FAR_FROM_CUT,
+    revComp,
+    createPBS,
+    createPE3,
+    createRT,
+    checkPam,
+)
+
+
+def main(inputs):
+    # Put in sequences
+    wtSeq = inputs["wildtype"].upper()
+    mut = inputs["mutation"].upper()
+    spacer = inputs["spacer"].upper()
+    # Advanced
+    pamSeq = inputs["pam"].upper()
+    pbsRange = inputs["pbsRange"]
+
+    # Identify insertion and/or deletion
+    [delStart, delStop] = [wtSeq.find("("), wtSeq.find(")")]
+    deletion = wtSeq[delStart + 1 : delStop]
+    # Create mutant sequence by removing any deletions and adding any insertions
+    mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop + 1 : len(wtSeq)]
+    # Remove parentheses from user input wt sequence
+    wtFinal = wtSeq[0:delStart] + deletion + wtSeq[delStop + 1 : len(wtSeq)]
+    cut = wtFinal.find(spacer)
+
+    isTopStrand = True
+    if cut < 0:
+        # Flip sequence if the spacer is found on the bottom strand
+        isTopStrand = False
+        wtSeq = revComp(wtSeq)
+        mut = revComp(mut)
+        [delStart, delStop] = [wtSeq.find("("), wtSeq.find(")")]
+        deletion = wtSeq[delStart + 1 : delStop]
+        mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop + 1 : len(wtSeq)]
+        wtFinal = wtSeq[0:delStart] + deletion + wtSeq[delStop + 1 : len(wtSeq)]
+        cut = wtFinal.find(spacer)
+        if cut < 0:
+            print("ERROR: Spacer sequence not found")
+            return {"errors": ["Spacer sequence not found"]}
+
+    cut += len(spacer) - CUT_TO_PAM_LENGTH
+    wtSeq = wtFinal
+
+    # Ensure that the cut site is 5' of the mutation
+    if cut > delStart:
+        print(
+            "ERROR: The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."
+        )
+        return {
+            "errors": [
+                "The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."
+            ]
+        }
+
+    # Create components of pegRNA
+    rtInfo = createRT(mutSeq, mut, cut)
+    pbsInfo = createPBS(mutSeq, cut, pbsRange)
+    pe3Info = createPE3(wtSeq, mutSeq, pamSeq, cut)
+    pamInfo = checkPam(wtSeq, mutSeq, pamSeq, cut)
+
+    # Adjust values for printing
+    if isTopStrand == False:
+        mutSeq = revComp(mutSeq)
+        mut = revComp(mut)
+        deletion = revComp(deletion)
+        wtSeq = revComp(wtSeq)
+
+    # Errors and Warnings
+    errors = []
+    warnings = {"general": [], "pegRna": [], "pe3": []}
+
+    # Spacer warnings
+    if len(spacer) != GUIDE_LENGTH:
+        warnings["general"].append("Spacer is not the correct length.")
+    if pamInfo["wrongSpacer"]:
+        warnings["general"].append("Spacer has an incorrect PAM site.")
+    if pamInfo["reCutOccurs"]:
+        warnings["general"].append(
+            "Spacer will be able to nick mutant DNA. This may have deleterious effects."
+        )
+
+    # Cut is close enough for efficient editing
+    if len(wtSeq[cut:delStart]) > TOO_FAR_FROM_CUT:
+        warnings["general"].append(
+            "The cut site of your spacer is far from the edited region. This may reduce editing efficiency."
+        )
+
+    # PE3 warnings
+    if pe3Info == []:
+        warnings["pe3"].append(
+            "No PAM sites on mutant strand! Try inputting a longer strech of wildytpe sequence."
+        )
+    if len(list(filter(lambda o: o["type"] == "pe3", pe3Info))) == 0:
+        warnings["pe3"].append(
+            "There are no PE3 guides. Try inputting a longer strech of wildytpe sequence."
+        )
+    if len(list(filter(lambda o: o["type"] == "pe3b", pe3Info))) == 0:
+        warnings["pe3"].append(
+            "There are no PE3b guides. If you'd like to use a PE3b strategy, you may be able to add a silent mutation which adds a PAM site in the region spanned by the RT."
+        )
+
+    # Poly-T tracks are bad for pegRNA expression
+    for o in pbsInfo:
+        if o["pbsPolyT"] == True:
+            warnings["pegRna"].append(
+                "Poly-T tracks of length 4 or more were found in PBS option(s), and may reduce pegRNA expression."
+            )
+            break
+    # RTs that end with C are NOT recommended (see Anzalone, 2019)
+    for o in rtInfo:
+        if o["startsWithC"] == True:
+            warnings["pegRna"].append(
+                "RT template is NOT RECOMMENDED because 5' end is a C: " + o["rt"]
+            )
+    for o in rtInfo:
+        if o["rtPolyT"] == True:
+            warnings["pegRna"].append(
+                "Poly-T tracks of length 4 or more were found in RT option(s), and may reduce pegRNA expression."
+            )
+            break
+
+    # Returned values
+    return {
+        "spacerMatchesOn": "top" if isTopStrand else "bottom",
+        "wildtypeSequence": wtSeq,
+        "editedSequence": mutSeq,
+        "protospacerAdjacentMotif": pamSeq,
+        "insertion": mut,
+        "deletion": deletion,
+        "spacer": spacer,
+        "spacerCutIndex": cut,
+        "primeEditing3Guides": pe3Info,
+        "reverseTranscriptaseTemplates": rtInfo,
+        "spacerPamInfo": pamInfo,
+        "primerBindingSites": pbsInfo,
+        "errors": errors,
+        "warnings": warnings,
+    }
