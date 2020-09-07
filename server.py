@@ -53,7 +53,7 @@ async def generate_rt(input: PegInput):
 async def generate_rt(input: PegInput):
     cut = find_cas9_cut(input.wtSeq, input.spacer)
     mutSeq = create_mutSeq(input.wtSeq, input.mut)
-    return createPBS(mutSeq, cut)
+    return createPBS(mutSeq, cut, {"start": 8, "stop": 18})
 
 
 @app.post("/generate/mutSeq")
