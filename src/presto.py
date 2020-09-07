@@ -13,7 +13,7 @@ DEFAULT_PBS_RANGE = {"start": 8, "stop": 18}
 CUT_TO_PAM_LENGTH = 3
 GUIDE_LENGTH = 20
 PE3B_TEST_LENGTH = GUIDE_LENGTH - 4
-TOO_FAR_FROM_CUT = 30
+TOO_FAR_FROM_CUT = 10
 COMPLEMENT_MAP = {
     "A": "T",
     "T": "A",
@@ -85,14 +85,14 @@ def tm(seq):
     gc = seq.count("C") + seq.count("G")
     at = seq.count("A") + seq.count("T")
     tm = (at * 2) + (gc * 4)
+    return tm
 
 
 # Calculate RT length options
 def calcRtRange(mut):
     mutLength = len(mut)
-    # TODO: update formula
     rangeMap = {
-        3: [math.floor(0.75 * mutLength) + 6, math.floor(0.75 * mutLength) + 16],
+        4: [math.ceil(mutLength) + 6, math.ceil(mutLength) + 16],
         20: [mutLength + 10, mutLength + 30],
     }
     defaultRange = [9, 16]
@@ -107,17 +107,26 @@ def createRT(mutSeq, mut, cut, delStart, rtRange):
     rtInfo = []
     for i in range(rtRange["start"], rtRange["stop"]):
         rt = revComp(mutSeq[cut: cut + i])
-        fhr = mutSeq[delStart + len(mut): cut + i]
+        fhrStart = delStart + len(mut)
+        fhrStop = cut + i
+        fhrIsValid = fhrStart <= fhrStop
+        cutIsValid = cut + i < len(mutSeq)
+        fhr = mutSeq[fhrStart:fhrStop]
         info = {
             "rtLength": len(rt),
             "rt": rt,
             "isDefault": False,
-            "fhr": fhr,
+            "error": (""
+                      if cutIsValid and fhrIsValid else "ERROR: " +
+                      ("Cut too close to edge of wildtype sequence." if cutIsValid else "") +
+                      ("FHR does not exist." if fhrIsValid else "")
+                      ),
+            "fhr": (fhr if not fhrIsValid else "INVALID"),
             "fhrLength": len(fhr),
-            "fhrGC": gcContent(fhr),
+            "fhrGC": (gcContent(fhr) if fhrIsValid else 0),
             "rtTM": tm(rt),
             "startsWithC": rt[0] == "C",
-            "rtPolyT": rt.find("TTTT") >= 0 or rt.find("AAAA") >= 0
+            "rtPolyT": (rt.find("TTTT") >= 0 or rt.find("AAAA") >= 0)
         }
         rtInfo.append(info)
 
@@ -139,13 +148,15 @@ def createPBS(mutSeq, cut, pbsRange):
     pbsInfo = []
     for i in range(pbsRange["start"], pbsRange["stop"]):
         pbs = revComp(mutSeq[(cut - i): cut])
+        pbsIsValid = cut - i >= 0
         info = {
             "length": i,
             "pbs": pbs,
-            "isDefault": len(pbs) == 13,
-            "pbsGC": gcContent(pbs),
-            "pbsTM": tm(pbs),
-            "pbsPolyT": pbs.find("TTTT") >= 0 or pbs.find("AAAA") >= 0
+            "error": ("" if pbsIsValid else "ERROR: Cut site is too close to 5'"),
+            "isDefault": (len(pbs) == 13 if pbsIsValid else False),
+            "pbsGC": (gcContent(pbs) if pbsIsValid else 0),
+            "pbsTM": (tm(pbs) if pbsIsValid else 0),
+            "pbsPolyT": (pbs.find("TTTT") >= 0 or pbs.find("AAAA") >= 0)
         }
         pbsInfo.append(info)
 
@@ -220,7 +231,7 @@ def main(inputs):
         cut = wtFinal.find(spacer)
         if cut < 0:
             print("ERROR: Spacer sequence not found")
-            return {errors: ["Spacer sequence not found"]}
+            return {"errors": ["Spacer sequence not found"]}
 
     cut += len(spacer) - CUT_TO_PAM_LENGTH
     wtSeq = wtFinal
@@ -228,7 +239,7 @@ def main(inputs):
     # Ensure that the cut site is 5' of the mutation
     if cut > delStart:
         print("ERROR: The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again.")
-        return {errors: ["The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."]}
+        return {"errors": ["The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."]}
 
     # Create components of pegRNA
     rtInfo = createRT(mutSeq, mut, cut, delStart, rtRange)
@@ -260,15 +271,15 @@ def main(inputs):
         warnings["general"].append("Spacer will be able to nick mutant DNA. This may have deleterious effects.")
 
     # Cut is close enough for efficient editing
-    if len(wtSeq[cut:delStart]) > TOO_FAR_FROM_CUT:
-        warnings.general.append(
+    if delStart - cut > TOO_FAR_FROM_CUT:
+        warnings["general"].append(
             "The cut site of your spacer is far from the edited region. This may reduce editing efficiency.")
 
     # PE3 warnings
     if pe3Info == []:
-        warnings["pe3"].append("No PAM sites on mutant strand! Try inputting a longer strech of wildytpe sequence.")
+        warnings["pe3"].append("No PAM sites on mutant strand! Try using a longer strech of wildytpe sequence.")
     if len(list(filter(lambda o: o["type"] == "pe3", pe3Info))) == 0:
-        warnings["pe3"].append("There are no PE3 guides. Try inputting a longer strech of wildytpe sequence.")
+        warnings["pe3"].append("There are no PE3 guides. Try using a longer strech of wildytpe sequence.")
     if len(list(filter(lambda o: o["type"] == "pe3b", pe3Info))) == 0:
         warnings["pe3"].append(
             "There are no PE3b guides. If you'd like to use a PE3b strategy, you may be able to add a silent mutation which adds a PAM site in the region spanned by the RT.")
@@ -332,17 +343,23 @@ def writeCsvFile(outputFile, values):
     writeLine("OUTPUT")
     # RT table
     writeLine("Reverse transcriptase templates")
-    writeLine("Flap homology region length", "Flap homology region G/C content", "RT sequence")
+    writeLine("Flap homology region length", "Flap homology region G/C content", "Default", "RT sequence", "Error?")
     for o in values["reverseTranscriptaseTemplates"]:
         if o["startsWithC"] == False:
-            writeLine(str(o["fhrLength"]), str(o["fhrGC"]), o["rt"])
+            writeLine(str(o["fhrLength"]), str(o["fhrGC"]), ("Yes" if o["isDefault"] else ""), o["rt"], o["error"])
     writeLine()
 
     # PBS table
     writeLine("Primer binding sites")
-    writeLine("Length", "G/C content", "Tm", "Default", "PBS sequence")
+    writeLine("Length", "G/C content", "Tm", "Default", "PBS sequence", "Error?")
     for o in values["primerBindingSites"]:
-        writeLine(str(o["length"]), str(o["pbsGC"]), str(o["pbsTM"]), ("Yes" if o["isDefault"] else ""), o["pbs"])
+        writeLine(
+            str(o["length"]),
+            str(o["pbsGC"]),
+            str(o["pbsTM"]),
+            ("Yes" if o["isDefault"] else ""),
+            o["pbs"],
+            o["error"])
     writeLine()
 
     # PE3 table
