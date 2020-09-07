@@ -1,4 +1,3 @@
-
 import os
 import re
 
@@ -11,25 +10,25 @@ GUIDE_LENGTH = 20
 PE3B_TEST_LENGTH = GUIDE_LENGTH - 4
 TOO_FAR_FROM_CUT = 30
 COMPLEMENT_MAP = {
-    "A":"T",
-    "T":"A",
-    "C":"G",
-    "G":"C",
-    "N":"N",
-    "Y":"R",
-    "R":"Y",
-    "W":"W",
-    "S":"S",
-    "K":"M",
-    "M":"K",
-    "D":"H",
-    "V":"B",
-    "H":"D",
-    "B":"V",
-    "X":"X",
-    "-":"-",
-    "(":")",
-    ")":"(",
+    "A": "T",
+    "T": "A",
+    "C": "G",
+    "G": "C",
+    "N": "N",
+    "Y": "R",
+    "R": "Y",
+    "W": "W",
+    "S": "S",
+    "K": "M",
+    "M": "K",
+    "D": "H",
+    "V": "B",
+    "H": "D",
+    "B": "V",
+    "X": "X",
+    "-": "-",
+    "(": ")",
+    ")": "(",
 }
 AMBIGUOUS_BASES = {
     "N": ".",
@@ -66,7 +65,7 @@ def ntToRegex(seq):
             expression += AMBIGUOUS_BASES[base]
         else:
             expression += base
-    return rf'(?=({expression}))'
+    return rf"(?=({expression}))"
 
 
 # function calculating G/C content
@@ -94,18 +93,13 @@ def tm(seq):
 ############################## TODO: add 5 and take out key thing ####################################
 # Create reverse transcriptase template options
 def createRT(mutSeq, mut, cut):
-    lengthMap = {
-        5: 9,
-        10: 15,
-        15: 20,
-        25: 30,
-    }
+    lengthMap = {5: 9, 10: 15, 15: 20, 25: 30}
     relevantOptions = range(0, 25)
     for length, num in lengthMap.items():
         if len(mut) <= length:
             relevantOptions = range(0, num)
             break
-#####################TODO: isDefault######################
+    #####################TODO: isDefault######################
     rtInfo = []
     for i in relevantOptions:
         rt = revComp(mutSeq[cut : (cut + len(mut) + 8 + i)])
@@ -116,7 +110,7 @@ def createRT(mutSeq, mut, cut):
             "flapGC": gcContent(rt),
             "rtTM": tm(rt),
             "startsWithC": rt[0] == "C",
-            "rtPolyT": rt.find("TTTT") >= 0 or rt.find("AAAA") >= 0
+            "rtPolyT": rt.find("TTTT") >= 0 or rt.find("AAAA") >= 0,
         }
         rtInfo.append(info)
 
@@ -134,8 +128,8 @@ def createPBS(mutSeq, cut, pbsRange):
             "isDefault": len(pbs) == 13,
             "pbsGC": gcContent(pbs),
             "pbsTM": tm(pbs),
-            "pbsPolyT": pbs.find("TTTT") >= 0 or pbs.find("AAAA") >= 0
-        } 
+            "pbsPolyT": pbs.find("TTTT") >= 0 or pbs.find("AAAA") >= 0,
+        }
         pbsInfo.append(info)
 
     return pbsInfo
@@ -167,9 +161,9 @@ def createPE3(wtSeq, mutSeq, pamSeq, cut):
 
 # Check that PAM is correct & that it doesn't exist in mutSeq
 def checkPam(wtSeq, mutSeq, pamSeq, cut):
-    pamCheck = wtSeq[cut+CUT_TO_PAM_LENGTH : cut+CUT_TO_PAM_LENGTH+len(pamSeq)]
-    pamCutCheck = wtSeq[cut : cut+CUT_TO_PAM_LENGTH] + pamSeq
-    mutCutCheck = mutSeq[cut : cut+CUT_TO_PAM_LENGTH+len(pamSeq)]
+    pamCheck = wtSeq[cut + CUT_TO_PAM_LENGTH : cut + CUT_TO_PAM_LENGTH + len(pamSeq)]
+    pamCutCheck = wtSeq[cut : cut + CUT_TO_PAM_LENGTH] + pamSeq
+    mutCutCheck = mutSeq[cut : cut + CUT_TO_PAM_LENGTH + len(pamSeq)]
     return {
         "wrongSpacer": not re.match(ntToRegex(pamSeq), pamCheck),
         "reCutOccurs": re.match(ntToRegex(pamCutCheck), mutCutCheck),
@@ -190,11 +184,11 @@ def main(inputs):
 
     # Identify insertion and/or deletion
     [delStart, delStop] = [wtSeq.find("("), wtSeq.find(")")]
-    deletion = wtSeq[delStart+1 : delStop]
+    deletion = wtSeq[delStart + 1 : delStop]
     # Create mutant sequence by removing any deletions and adding any insertions
-    mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop+1:len(wtSeq)]
+    mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop + 1 : len(wtSeq)]
     # Remove parentheses from user input wt sequence
-    wtFinal = wtSeq[0:delStart] + deletion + wtSeq[delStop+1:len(wtSeq)]
+    wtFinal = wtSeq[0:delStart] + deletion + wtSeq[delStop + 1 : len(wtSeq)]
     cut = wtFinal.find(spacer)
 
     isTopStrand = True
@@ -204,9 +198,9 @@ def main(inputs):
         wtSeq = revComp(wtSeq)
         mut = revComp(mut)
         [delStart, delStop] = [wtSeq.find("("), wtSeq.find(")")]
-        deletion = wtSeq[delStart+1 : delStop]
-        mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop+1:len(wtSeq)]
-        wtFinal = wtSeq[0:delStart] + deletion + wtSeq[delStop+1:len(wtSeq)]
+        deletion = wtSeq[delStart + 1 : delStop]
+        mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop + 1 : len(wtSeq)]
+        wtFinal = wtSeq[0:delStart] + deletion + wtSeq[delStop + 1 : len(wtSeq)]
         cut = wtFinal.find(spacer)
         if cut < 0:
             print("ERROR: Spacer sequence not found")
@@ -217,8 +211,14 @@ def main(inputs):
 
     # Ensure that the cut site is 5' of the mutation
     if cut > delStart:
-        print("ERROR: The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again.")
-        return {errors: ["The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."]}
+        print(
+            "ERROR: The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."
+        )
+        return {
+            errors: [
+                "The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."
+            ]
+        }
 
     # Create components of pegRNA
     rtInfo = createRT(mutSeq, mut, cut)
@@ -234,12 +234,8 @@ def main(inputs):
         wtSeq = revComp(wtSeq)
 
     # Errors and Warnings
-    errors=[]
-    warnings={
-        "general": [],
-        "pegRna": [],
-        "pe3": [],
-    }
+    errors = []
+    warnings = {"general": [], "pegRna": [], "pe3": []}
 
     # Spacer warnings
     if len(spacer) != GUIDE_LENGTH:
@@ -247,32 +243,48 @@ def main(inputs):
     if pamInfo["wrongSpacer"]:
         warnings["general"].append("Spacer has an incorrect PAM site.")
     if pamInfo["reCutOccurs"]:
-        warnings["general"].append("Spacer will be able to nick mutant DNA. This may have deleterious effects.")
+        warnings["general"].append(
+            "Spacer will be able to nick mutant DNA. This may have deleterious effects."
+        )
 
     # Cut is close enough for efficient editing
     if len(wtSeq[cut:delStart]) > TOO_FAR_FROM_CUT:
-        warnings.general.append("The cut site of your spacer is far from the edited region. This may reduce editing efficiency.")
+        warnings.general.append(
+            "The cut site of your spacer is far from the edited region. This may reduce editing efficiency."
+        )
 
     # PE3 warnings
     if pe3Info == []:
-        warnings["pe3"].append("No PAM sites on mutant strand! Try inputting a longer strech of wildytpe sequence.")
+        warnings["pe3"].append(
+            "No PAM sites on mutant strand! Try inputting a longer strech of wildytpe sequence."
+        )
     if len(list(filter(lambda o: o["type"] == "pe3", pe3Info))) == 0:
-        warnings["pe3"].append("There are no PE3 guides. Try inputting a longer strech of wildytpe sequence.")
+        warnings["pe3"].append(
+            "There are no PE3 guides. Try inputting a longer strech of wildytpe sequence."
+        )
     if len(list(filter(lambda o: o["type"] == "pe3b", pe3Info))) == 0:
-        warnings["pe3"].append("There are no PE3b guides. If you'd like to use a PE3b strategy, you may be able to add a silent mutation which adds a PAM site in the region spanned by the RT.")
+        warnings["pe3"].append(
+            "There are no PE3b guides. If you'd like to use a PE3b strategy, you may be able to add a silent mutation which adds a PAM site in the region spanned by the RT."
+        )
 
     # Poly-T tracks are bad for pegRNA expression
     for o in pbsInfo:
         if o["pbsPolyT"] == True:
-            warnings["pegRna"].append("Poly-T tracks of length 4 or more were found in PBS option(s), and may reduce pegRNA expression.")
+            warnings["pegRna"].append(
+                "Poly-T tracks of length 4 or more were found in PBS option(s), and may reduce pegRNA expression."
+            )
             break
     # RTs that end with C are NOT recommended (see Anzalone, 2019)
     for o in rtInfo:
         if o["startsWithC"] == True:
-            warnings["pegRna"].append("RT template is NOT RECOMMENDED because 5' end is a C: " + o["rt"])
+            warnings["pegRna"].append(
+                "RT template is NOT RECOMMENDED because 5' end is a C: " + o["rt"]
+            )
     for o in rtInfo:
         if o["rtPolyT"] == True:
-            warnings["pegRna"].append("Poly-T tracks of length 4 or more were found in RT option(s), and may reduce pegRNA expression.")
+            warnings["pegRna"].append(
+                "Poly-T tracks of length 4 or more were found in RT option(s), and may reduce pegRNA expression."
+            )
             break
 
     # Returned values
@@ -311,24 +323,30 @@ def writeCsvFile(values):
     writeLine("Spacer sequence", values["spacer"])
     # Abreviated basic outputs
     writeLine("Spacer matches on", values["spacerMatchesOn"])
-    writeLine("Edited DNA sequence" , values["editedSequence"])
+    writeLine("Edited DNA sequence", values["editedSequence"])
     writeLine()
 
     writeLine()
     writeLine("OUTPUT")
     # RT table
     writeLine("Reverse transcriptase templates")
-    writeLine("Flap Length" , "Flap G/C content" , "RT sequence")
+    writeLine("Flap Length", "Flap G/C content", "RT sequence")
     for o in values["reverseTranscriptaseTemplates"]:
         if o["startsWithC"] == False:
-            writeLine(str(o["flapLength"]) , str(o["flapGC"]) , o["rt"])
+            writeLine(str(o["flapLength"]), str(o["flapGC"]), o["rt"])
     writeLine()
 
     # PBS table
     writeLine("Primer binding sites")
     writeLine("Length", "G/C content", "Tm", "Default", "PBS sequence")
     for o in values["primerBindingSites"]:
-        writeLine(str(o["length"]) , str(o["pbsGC"]), str(o["pbsTM"]), ("Yes" if o["isDefault"] else ""), o["pbs"])
+        writeLine(
+            str(o["length"]),
+            str(o["pbsGC"]),
+            str(o["pbsTM"]),
+            ("Yes" if o["isDefault"] else ""),
+            o["pbs"],
+        )
     writeLine()
 
     # PE3 table
@@ -342,10 +360,12 @@ def writeCsvFile(values):
     # Print pe3 guides
     if pe3 != []:
         writeLine("PE3 guides")
-        writeLine( "Cut index" , "Distance between spacer and PE3 guide cut sites", "PE3 guide")
+        writeLine(
+            "Cut index", "Distance between spacer and PE3 guide cut sites", "PE3 guide"
+        )
         for o in pe3:
             if o["pamStart"] >= GUIDE_LENGTH + CUT_TO_PAM_LENGTH:
-                writeLine(o["cutPE3"],  o["cutDiff"], o["secondGuide"])
+                writeLine(o["cutPE3"], o["cutDiff"], o["secondGuide"])
     writeLine()
     # Print pe3b guides
     if pe3b != []:
@@ -382,25 +402,25 @@ def writeCsvFile(values):
 
 if __name__ == "__main__":
     # Command line input
-    #wt = input("Please input your wildtype sequence: ").upper()
-    #mut = input("Please input your mutation sequence. For deletion, leave blank: ").upper()
-    #spacer = input("Please input your spacer sequence: ").upper()
-    #pam = input("Please input your spacer sequence: ").upper()
+    # wt = input("Please input your wildtype sequence: ").upper()
+    # mut = input("Please input your mutation sequence. For deletion, leave blank: ").upper()
+    # spacer = input("Please input your spacer sequence: ").upper()
+    # pam = input("Please input your spacer sequence: ").upper()
 
     # Input object
     inputs = {
-        "wildtype": "CACAACTCACTTAGCAAAGCTGCCCGCCGCCTCAGCCTAATGTTACACGGCCTTGTGACCCCTAGCCTCCCTGGG(AAAAAAAAAAA)CCCTAGCCATTTAAAGAGGGATGAGGTGATGCTGAAGGCCAGTTGGCA", 
+        "wildtype": "CACAACTCACTTAGCAAAGCTGCCCGCCGCCTCAGCCTAATGTTACACGGCCTTGTGACCCCTAGCCTCCCTGGG(AAAAAAAAAAA)CCCTAGCCATTTAAAGAGGGATGAGGTGATGCTGAAGGCCAGTTGGCA",
         "mutation": "ggctcacgtttggaagaggaactgagacgccgcttaactgaa",
         "spacer": "CATCCCTCTTTAAATGGCTA",
         # Advanced
         "pam": "NGG",
-        "pbsRange": {"start":8, "stop":18},
+        "pbsRange": {"start": 8, "stop": 18},
     }
     values = main(inputs)
     writeCsvFile(values)
 
 
-'''
+"""
     #########################################################################################
     # Print Section
     #########################################################################################
@@ -546,4 +566,5 @@ if __name__ == "__main__":
         for o in rtInfo:
             if o["startsWithC"] == True:
                 print(o["rt"])
-'''
+"""
+
