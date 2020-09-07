@@ -204,7 +204,7 @@ def main(inputs):
         cut = wtFinal.find(spacer)
         if cut < 0:
             print("ERROR: Spacer sequence not found")
-            return {errors: ["Spacer sequence not found"]}
+            return {"errors": ["Spacer sequence not found"]}
 
     cut += len(spacer) - CUT_TO_PAM_LENGTH
     wtSeq = wtFinal
@@ -215,7 +215,7 @@ def main(inputs):
             "ERROR: The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."
         )
         return {
-            errors: [
+            "errors": [
                 "The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."
             ]
         }
@@ -249,7 +249,7 @@ def main(inputs):
 
     # Cut is close enough for efficient editing
     if len(wtSeq[cut:delStart]) > TOO_FAR_FROM_CUT:
-        warnings.general.append(
+        warnings["general"].append(
             "The cut site of your spacer is far from the edited region. This may reduce editing efficiency."
         )
 
