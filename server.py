@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Request
-from src.web.pegInput import main
 from src.core.sequence_utils import (
     createPBS,
     createRT,
@@ -34,11 +33,6 @@ templates = Jinja2Templates(directory="ui/build")
 async def root(request: Request):
     # return templates.TemplateResponse("main.jinja", {"request": request})
     return templates.TemplateResponse("index.html", {"request": request})
-
-
-@app.post("/generate", response_class=PlainTextResponse)
-async def generate(input: PegInput):
-    return main(wtSeq=input.wtSeq, mut=input.mut, spacer=input.spacer)
 
 
 @app.post("/generate/rt")
