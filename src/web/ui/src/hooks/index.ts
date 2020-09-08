@@ -3,13 +3,16 @@ import {
   generateCleanWtSeq,
   generateMutSeq,
   generatePrimerBindingSiteOptions,
+  generatePe3Options,
 } from '../api';
-import { GlobalState } from '../types/peggy';
+import { GlobalState, PE3Option } from '../types/presto';
 import { createGlobalState } from 'react-hooks-global-state';
 
 const initialState: GlobalState = {
   templateOptions: [],
   pbsOptions: [],
+  pe3bOptions: [],
+  pe3Options: [],
   cleanWtSeq: '',
   cleanMutSeq: '',
   step: 0,
@@ -22,6 +25,8 @@ export function useSequencePredictions() {
   );
 
   const [pbsOptions, setPBSOptions] = useGlobalState('pbsOptions');
+  const [pe3bOptions, setPe3bOptions] = useGlobalState('pe3bOptions');
+  const [pe3Options, setPe3Options] = useGlobalState('pe3Options');
 
   async function generateSequencePredictions(
     wtSeq: string,
@@ -30,11 +35,20 @@ export function useSequencePredictions() {
   ) {
     setTemplateOptions(await generateTemplateOptions(wtSeq, mut, spacer));
     setPBSOptions(await generatePrimerBindingSiteOptions(wtSeq, mut, spacer));
+    const pe3Options: PE3Option[] = await generatePe3Options(
+      wtSeq,
+      mut,
+      spacer,
+    );
+    setPe3bOptions(pe3Options.filter((option) => option.type === 'pe3b'));
+    setPe3Options(pe3Options.filter((option) => option.type === 'pe3'));
   }
 
   return {
     templateOptions,
     pbsOptions,
+    pe3bOptions,
+    pe3Options,
     generateSequencePredictions,
   };
 }

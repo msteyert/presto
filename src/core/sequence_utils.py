@@ -70,6 +70,7 @@ def ntToRegex(seq):
 def gcContent(seq):
     "calculate G/C content of sequence"
     gc = seq.count("C") + seq.count("G")
+    print(f"seq: {seq}")
     gcPercent = 100 * (float(gc) / len(seq))
     return int(round(gcPercent))
 
@@ -121,15 +122,16 @@ def createPBS(mutSeq, cut, pbsRange):
     pbsInfo = []
     for i in range(pbsRange["start"], pbsRange["stop"]):
         pbs = revComp(mutSeq[(cut - i) : cut])
-        info = {
-            "length": i,
-            "pbs": pbs,
-            "isDefault": len(pbs) == 13,
-            "pbsGC": gcContent(pbs),
-            "pbsTM": tm(pbs),
-            "pbsPolyT": pbs.find("TTTT") >= 0 or pbs.find("AAAA") >= 0,
-        }
-        pbsInfo.append(info)
+        if len(pbs) > 1:
+            info = {
+                "length": i,
+                "pbs": pbs,
+                "isDefault": len(pbs) == 13,
+                "pbsGC": gcContent(pbs),
+                "pbsTM": tm(pbs),
+                "pbsPolyT": pbs.find("TTTT") >= 0 or pbs.find("AAAA") >= 0,
+            }
+            pbsInfo.append(info)
 
     return pbsInfo
 
@@ -199,7 +201,6 @@ def find_spacer_cut(sequence, spacer):
 
 
 def is_top_strand(sequence, spacer):
-    cut = find_spacer_cut(sequence, spacer)
     if find_spacer_cut(sequence, spacer) > 0:
         return True
     if find_spacer_cut(revComp(sequence), spacer) > 0:

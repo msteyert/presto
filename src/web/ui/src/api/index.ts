@@ -24,6 +24,18 @@ export const generatePrimerBindingSiteOptions = async (
   return await res.json();
 };
 
+export const generatePe3Options = async (
+  wtSeq: string,
+  mut: string,
+  spacer: string,
+) => {
+  const res = await fetch(`${API_ROOT}/generate/pe3`, {
+    method: 'post',
+    body: JSON.stringify({ wtSeq, mut, spacer }),
+  });
+  return await res.json();
+};
+
 export const generateMutSeq = async (
   wtSeq: string,
   mut: string,
