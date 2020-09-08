@@ -6,7 +6,6 @@ from src.core.sequence_utils import (
     create_mutSeq,
     find_cas9_cut,
 )
-from fastapi.responses import PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
