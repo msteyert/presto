@@ -91,11 +91,12 @@ def tm(seq):
 # Calculate RT length options
 def calcRtRange(mut):
     mutLength = len(mut)
+    defaultRange = [9, 16]
     rangeMap = {
-        4: [math.ceil(mutLength) + 6, math.ceil(mutLength) + 16],
+        4: [mutLength + 6, mutLength + 16],
+        8: [mutLength + 8, mutLength + 22],
         20: [mutLength + 10, mutLength + 30],
     }
-    defaultRange = [9, 16]
     for length, rtRange in rangeMap.items():
         if mutLength > length:
             defaultRange = rtRange
@@ -109,7 +110,7 @@ def createRT(mutSeq, mut, cut, delStart, rtRange):
         rt = revComp(mutSeq[cut: cut + i])
         fhrStart = delStart + len(mut)
         fhrStop = cut + i
-        fhrIsValid = fhrStart <= fhrStop
+        fhrIsValid = fhrStart < fhrStop
         cutIsValid = cut + i < len(mutSeq)
         fhr = mutSeq[fhrStart:fhrStop]
         info = {
@@ -445,12 +446,12 @@ if __name__ == "__main__":
     # Input object
     inputs = {
         "wildtype": args.wildtype,
-        "mutation": args.mutation,
+        "mutation": args.mutation if args.mutation else "",
         "spacer": args.spacer,
         # Advanced
         "pam": args.pam if args.pam else "NGG",
         "pbsRange": {"start": int(args.pbsrange[0]), "stop": int(args.pbsrange[1])} if args.pbsrange and '' not in args.pbsrange else DEFAULT_PBS_RANGE,
-        "rtRange": {"start": int(args.rtrange[0]), "stop": int(args.rtrange[1])} if args.rtrange and '' not in args.rtrange else calcRtRange(args.mutation),
+        "rtRange": {"start": int(args.rtrange[0]), "stop": int(args.rtrange[1])} if args.rtrange and '' not in args.rtrange else calcRtRange(args.mutation if args.mutation else ""),
     }
 
     values = main(inputs)
