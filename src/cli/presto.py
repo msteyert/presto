@@ -71,7 +71,6 @@ def ntToRegex(seq):
         else:
             expression += base
     return rf'(?=({expression}))'
-    ####
 
 
 # function calculating G/C content
