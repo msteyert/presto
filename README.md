@@ -19,7 +19,7 @@ This program will output options for both if they exist.
 To run the program from the command line use the following
 
 ```python
-python src/cli/presto.py
+python presto.py
 ```
 
 Once you run the program (in python3) you will be prompted for the following, respectively:
