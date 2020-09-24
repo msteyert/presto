@@ -2,8 +2,7 @@ import os
 from src.core.sequence_utils import GUIDE_LENGTH, CUT_TO_PAM_LENGTH
 
 
-def writeCsvFile(values):
-    outputFile = "OUTPUT.csv"
+def writeCsvFile(outputFile, values):
     f = open(outputFile, "w")
     print("CSV file will be written to:", os.getcwd() + "/" + outputFile)
 
@@ -26,15 +25,27 @@ def writeCsvFile(values):
     writeLine("OUTPUT")
     # RT table
     writeLine("Reverse transcriptase templates")
-    writeLine("Flap Length", "Flap G/C content", "RT sequence")
+    writeLine(
+        "Flap homology region length",
+        "Flap homology region G/C content",
+        "Default",
+        "RT sequence",
+        "Error?",
+    )
     for o in values["reverseTranscriptaseTemplates"]:
         if o["startsWithC"] == False:
-            writeLine(str(o["flapLength"]), str(o["flapGC"]), o["rt"])
+            writeLine(
+                str(o["fhrLength"]),
+                str(o["fhrGC"]),
+                ("Yes" if o["isDefault"] else ""),
+                o["rt"],
+                o["error"],
+            )
     writeLine()
 
     # PBS table
     writeLine("Primer binding sites")
-    writeLine("Length", "G/C content", "Tm", "Default", "PBS sequence")
+    writeLine("Length", "G/C content", "Tm", "Default", "PBS sequence", "Error?")
     for o in values["primerBindingSites"]:
         writeLine(
             str(o["length"]),
@@ -42,6 +53,7 @@ def writeCsvFile(values):
             str(o["pbsTM"]),
             ("Yes" if o["isDefault"] else ""),
             o["pbs"],
+            o["error"],
         )
     writeLine()
 

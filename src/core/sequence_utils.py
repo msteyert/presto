@@ -1,13 +1,14 @@
 import re
+import math
 
-from Bio.Seq import Seq
-from Bio.SeqUtils import MeltingTemp as mt
-
+# Input Defaults
+DEFAULT_PAM = "NGG"
+DEFAULT_PBS_RANGE = {"start": 8, "stop": 18}
 # Constants
 CUT_TO_PAM_LENGTH = 3
 GUIDE_LENGTH = 20
 PE3B_TEST_LENGTH = GUIDE_LENGTH - 4
-TOO_FAR_FROM_CUT = 30
+TOO_FAR_FROM_CUT = 10
 COMPLEMENT_MAP = {
     "A": "T",
     "T": "A",
@@ -70,49 +71,72 @@ def ntToRegex(seq):
 def gcContent(seq):
     "calculate G/C content of sequence"
     gc = seq.count("C") + seq.count("G")
-    print(f"seq: {seq}")
     gcPercent = 100 * (float(gc) / len(seq))
     return int(round(gcPercent))
 
 
-#######################TODO: figure out which calculation to use ###################
 def tm(seq):
     "calculate melting temperature of sequence"
-    return mt.Tm_Wallace(Seq(seq))
-    # gc = seq.count("C") + seq.count("G")
-    # at = seq.count("A") + seq.count("T")
-    # tm = 0
-    # if len(seq) < 14:
-    #     tm = (at * 2) + (gc * 4)
-    # else:
-    #     tm = 64.9 + 41 * (gc - 16.4) / (gc + at)
-    # tm = round(tm, 1)
-    # return tm
+    gc = seq.count("C") + seq.count("G")
+    at = seq.count("A") + seq.count("T")
+    tm = (at * 2) + (gc * 4)
+    return tm
 
 
-############################## TODO: add 5 and take out key thing ####################################
+def calcRtRange(mut):
+    "Calculate RT length options"
+    mutLength = len(mut)
+    defaultRange = [9, 16]
+    rangeMap = {
+        4: [mutLength + 6, mutLength + 16],
+        8: [mutLength + 8, mutLength + 22],
+        20: [mutLength + 10, mutLength + 30],
+    }
+    for length, rtRange in rangeMap.items():
+        if mutLength > length:
+            defaultRange = rtRange
+    return {"start": defaultRange[0], "stop": defaultRange[1]}
+
+
 def createRT(mutSeq, mut, cut):
     "create reverse transcriptase template options"
-    lengthMap = {5: 9, 10: 15, 15: 20, 25: 30}
-    relevantOptions = range(0, 25)
-    for length, num in lengthMap.items():
-        if len(mut) <= length:
-            relevantOptions = range(0, num)
-            break
-    #####################TODO: isDefault######################
     rtInfo = []
-    for i in relevantOptions:
-        rt = revComp(mutSeq[cut : (cut + len(mut) + 8 + i)])
+    for i in range(rtRange["start"], rtRange["stop"]):
+        rt = revComp(mutSeq[cut : cut + i])
+        fhrStart = delStart + len(mut)
+        fhrStop = cut + i
+        fhrIsValid = fhrStart < fhrStop
+        cutIsValid = cut + i < len(mutSeq)
+        fhr = mutSeq[fhrStart:fhrStop]
         info = {
-            "flapLength": i + 8,
+            "rtLength": len(rt),
             "rt": rt,
             "isDefault": False,
-            "flapGC": gcContent(rt),
+            "error": (
+                ""
+                if cutIsValid and fhrIsValid
+                else "ERROR: "
+                + ("Cut too close to edge of wildtype sequence." if cutIsValid else "")
+                + ("FHR does not exist." if fhrIsValid else "")
+            ),
+            "fhr": (fhr if not fhrIsValid else "INVALID"),
+            "fhrLength": len(fhr),
+            "fhrGC": (gcContent(fhr) if fhrIsValid else 0),
             "rtTM": tm(rt),
             "startsWithC": rt[0] == "C",
-            "rtPolyT": rt.find("TTTT") >= 0 or rt.find("AAAA") >= 0,
+            "rtPolyT": (rt.find("TTTT") >= 0 or rt.find("AAAA") >= 0),
         }
         rtInfo.append(info)
+
+    # Set default rt as the closest option to midpoint of rt range which doesn't start with C
+    midpoint = math.floor(len(rtInfo) / 2)
+    for i in range(0, midpoint - 1):
+        if not rtInfo[midpoint + i]["startsWithC"]:
+            rtInfo[midpoint + i]["isDefault"] = True
+            break
+        if not rtInfo[midpoint - i]["startsWithC"]:
+            rtInfo[midpoint - i]["isDefault"] = True
+            break
 
     return rtInfo
 
@@ -122,16 +146,17 @@ def createPBS(mutSeq, cut, pbsRange):
     pbsInfo = []
     for i in range(pbsRange["start"], pbsRange["stop"]):
         pbs = revComp(mutSeq[(cut - i) : cut])
-        if len(pbs) > 1:
-            info = {
-                "length": i,
-                "pbs": pbs,
-                "isDefault": len(pbs) == 13,
-                "pbsGC": gcContent(pbs),
-                "pbsTM": tm(pbs),
-                "pbsPolyT": pbs.find("TTTT") >= 0 or pbs.find("AAAA") >= 0,
-            }
-            pbsInfo.append(info)
+        pbsIsValid = cut - i >= 0
+        info = {
+            "length": i,
+            "pbs": pbs,
+            "error": ("" if pbsIsValid else "ERROR: Cut site is too close to 5'"),
+            "isDefault": (len(pbs) == 13 if pbsIsValid else False),
+            "pbsGC": (gcContent(pbs) if pbsIsValid else 0),
+            "pbsTM": (tm(pbs) if pbsIsValid else 0),
+            "pbsPolyT": (pbs.find("TTTT") >= 0 or pbs.find("AAAA") >= 0),
+        }
+        pbsInfo.append(info)
 
     return pbsInfo
 

@@ -1,12 +1,13 @@
 "main program logic for presto"
+
 from src.core.sequence_utils import (
-    GUIDE_LENGTH,
     CUT_TO_PAM_LENGTH,
+    GUIDE_LENGTH,
     TOO_FAR_FROM_CUT,
     revComp,
+    createRT,
     createPBS,
     createPE3,
-    createRT,
     checkPam,
 )
 
@@ -19,6 +20,7 @@ def main(inputs):
     # Advanced
     pamSeq = inputs["pam"].upper()
     pbsRange = inputs["pbsRange"]
+    rtRange = inputs["rtRange"]
 
     # Identify insertion and/or deletion
     [delStart, delStop] = [wtSeq.find("("), wtSeq.find(")")]
@@ -59,7 +61,7 @@ def main(inputs):
         }
 
     # Create components of pegRNA
-    rtInfo = createRT(mutSeq, mut, cut)
+    rtInfo = createRT(mutSeq, mut, cut, delStart, rtRange)
     pbsInfo = createPBS(mutSeq, cut, pbsRange)
     pe3Info = createPE3(wtSeq, mutSeq, pamSeq, cut)
     pamInfo = checkPam(wtSeq, mutSeq, pamSeq, cut)
@@ -86,7 +88,7 @@ def main(inputs):
         )
 
     # Cut is close enough for efficient editing
-    if len(wtSeq[cut:delStart]) > TOO_FAR_FROM_CUT:
+    if delStart - cut > TOO_FAR_FROM_CUT:
         warnings["general"].append(
             "The cut site of your spacer is far from the edited region. This may reduce editing efficiency."
         )
@@ -94,11 +96,11 @@ def main(inputs):
     # PE3 warnings
     if pe3Info == []:
         warnings["pe3"].append(
-            "No PAM sites on mutant strand! Try inputting a longer strech of wildytpe sequence."
+            "No PAM sites on mutant strand! Try using a longer strech of wildytpe sequence."
         )
     if len(list(filter(lambda o: o["type"] == "pe3", pe3Info))) == 0:
         warnings["pe3"].append(
-            "There are no PE3 guides. Try inputting a longer strech of wildytpe sequence."
+            "There are no PE3 guides. Try using a longer strech of wildytpe sequence."
         )
     if len(list(filter(lambda o: o["type"] == "pe3b", pe3Info))) == 0:
         warnings["pe3"].append(
