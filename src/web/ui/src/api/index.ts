@@ -1,12 +1,4 @@
 import { API_ROOT } from '../config';
-export const generate = async (wtSeq: string, mut: string, spacer: string) => {
-  const res = await fetch(`${API_ROOT}/generate`, {
-    method: 'post',
-    body: JSON.stringify({ wtSeq, mut, spacer }),
-  });
-  const text = await res.text();
-  return text;
-};
 
 export const generateTemplateOptions = async (
   wtSeq: string,
@@ -26,6 +18,18 @@ export const generatePrimerBindingSiteOptions = async (
   spacer: string,
 ) => {
   const res = await fetch(`${API_ROOT}/generate/pbs`, {
+    method: 'post',
+    body: JSON.stringify({ wtSeq, mut, spacer }),
+  });
+  return await res.json();
+};
+
+export const generatePe3Options = async (
+  wtSeq: string,
+  mut: string,
+  spacer: string,
+) => {
+  const res = await fetch(`${API_ROOT}/generate/pe3`, {
     method: 'post',
     body: JSON.stringify({ wtSeq, mut, spacer }),
   });
