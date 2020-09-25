@@ -11,15 +11,20 @@ const panes = [
     textAlign: 'left',
     render: () => (
       <Tab.Pane>
-        <Grid.Column width={5}>
-          <div
-            style={{ width: '30vw', overflowX: 'scroll', overflowY: 'auto' }}
-          >
-            <RTTemplates />
-            <div style={{ height: '20px' }} />
-            <PBSOptions />
-          </div>
-        </Grid.Column>
+        <Grid>
+          <Grid.Row>
+            <Grid.Column width={7}>
+              <div style={{ maxWidth: '100%', overflowX: 'scroll' }}>
+                <RTTemplates />
+              </div>
+            </Grid.Column>
+            <Grid.Column width={7}>
+              <div style={{ maxWidth: '100%', overflowX: 'scroll' }}>
+                <PBSOptions />
+              </div>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
       </Tab.Pane>
     ),
   },
@@ -28,15 +33,20 @@ const panes = [
     textAlign: 'left',
     render: () => (
       <Tab.Pane>
-        <Grid.Column width={5}>
-          <div
-            style={{ width: '30vw', overflowX: 'scroll', overflowY: 'auto' }}
-          >
-            <PE3BOptions />
-            <div style={{ height: '20px' }} />
-            <PE3Options />
-          </div>
-        </Grid.Column>
+        <Grid>
+          <Grid.Row>
+            <Grid.Column width={7}>
+              <div style={{ maxWidth: '100%', overflowX: 'scroll' }}>
+                <PE3BOptions />
+              </div>
+            </Grid.Column>
+            <Grid.Column width={7}>
+              <div style={{ maxWidth: '100%', overflowX: 'scroll' }}>
+                <PE3Options />
+              </div>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
       </Tab.Pane>
     ),
   },
