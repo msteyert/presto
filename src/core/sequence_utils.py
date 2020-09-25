@@ -98,7 +98,7 @@ def calcRtRange(mut):
     return {"start": defaultRange[0], "stop": defaultRange[1]}
 
 
-def createRT(mutSeq, mut, cut):
+def createRT(mutSeq, mut, cut, delStart, rtRange):
     "create reverse transcriptase template options"
     rtInfo = []
     for i in range(rtRange["start"], rtRange["stop"]):
@@ -199,7 +199,7 @@ def checkPam(wtSeq, mutSeq, pamSeq, cut):
 def find_deletion_range(sequence):
     "Identify insertion and/or deletion"
     [delStart, delStop] = [sequence.find("("), sequence.find(")")]
-    return delStop, delStop
+    return delStart, delStop
 
 
 def find_deletion(sequence):

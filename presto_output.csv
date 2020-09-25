@@ -1,0 +1,47 @@
+INPUT
+Wildtype sequence,ATGCGCTATGGCGATGCTGATATGCGCTATCGATTTGCTGATATGCGCTATCGGAGATGCTGAT
+Mutation,AGCGTA
+Spacer sequence,GATGCTGATATGCGCTATCG
+Spacer matches on,top
+Edited DNA sequence,ATGCGCTATGGCGATGCTGATATGCGCTATCGAAGCGTATTTGCTGATATGCGCTATCGGAGATGCTGAT
+
+
+OUTPUT
+Reverse transcriptase templates
+Flap homology region length,Flap homology region G/C content,Default,RT sequence,Error?
+2,0,,AATACGCTTCGA,
+3,0,,AAATACGCTTCGA,
+5,40,,GCAAATACGCTTCGA,
+6,33,,AGCAAATACGCTTCGA,
+8,38,Yes,TCAGCAAATACGCTTCGA,
+9,33,,ATCAGCAAATACGCTTCGA,
+10,30,,TATCAGCAAATACGCTTCGA,
+11,27,,ATATCAGCAAATACGCTTCGA,
+
+Primer binding sites
+Length,G/C content,Tm,Default,PBS sequence,Error?
+8,50,24,,TAGCGCAT,
+9,44,26,,TAGCGCATA,
+10,40,28,,TAGCGCATAT,
+11,45,32,,TAGCGCATATC,
+12,42,34,,TAGCGCATATCA,
+13,46,38,Yes,TAGCGCATATCAG,
+14,50,42,,TAGCGCATATCAGC,
+15,47,44,,TAGCGCATATCAGCA,
+16,44,46,,TAGCGCATATCAGCAT,
+17,47,50,,TAGCGCATATCAGCATC,
+
+
+
+
+General warnings:
+,Spacer has an incorrect PAM site.
+
+PE3/b warnings:
+,No PAM sites on mutant strand! Try using a longer strech of wildytpe sequence.
+,There are no PE3 guides. Try using a longer strech of wildytpe sequence.
+,There are no PE3b guides. If you'd like to use a PE3b strategy, you may be able to add a silent mutation which adds a PAM site in the region spanned by the RT.
+
+pegRNA warnings:
+,RT template is NOT RECOMMENDED because 5' end is a C: CAAATACGCTTCGA
+,RT template is NOT RECOMMENDED because 5' end is a C: CAGCAAATACGCTTCGA

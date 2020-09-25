@@ -40,22 +40,31 @@ if __name__ == "__main__":
             "Please input your mutation sequence. For deletion, leave blank: "
         ).upper()
         args["spacer"] = input("Please input your spacer sequence: ").upper()
-        args["pam"] = input("Please input your PAM (NGG is default): ").upper()
+        args["pam"] = (
+            input("Please input your PAM (NGG is default): ") or "NGG"
+        ).upper()
         pbsRangeStart = input(
             "Enter PBS start (" + str(DEFAULT_PBS_RANGE["start"]) + " is default): "
-        )
+        ) or str(DEFAULT_PBS_RANGE["start"])
         pbsRangeStop = input(
             "Enter PBS stop (" + str(DEFAULT_PBS_RANGE["stop"]) + " is default): "
-        )
+        ) or str(DEFAULT_PBS_RANGE["stop"])
         args["pbsrange"] = [pbsRangeStart, pbsRangeStop]
         defaultRtRange = calcRtRange(args["mutation"])
         rtRangeStart = input(
             "Enter RT start (" + str(defaultRtRange["start"]) + " is default): "
-        )
+        ) or str(defaultRtRange["start"])
         rtRangeStop = input(
             "Enter RT stop (" + str(defaultRtRange["stop"]) + " is default): "
-        )
+        ) or str(defaultRtRange["stop"])
         args["rtrange"] = [rtRangeStart, rtRangeStop]
+
+        output_file = (
+            input("Enter output file (presto_output.csv is default): ")
+            or "presto_output.csv"
+        )
+        args["file"] = output_file
+
         args = SimpleNamespace(**args)
 
     # Input object
@@ -74,4 +83,4 @@ if __name__ == "__main__":
     }
 
     values = main(inputs)
-    writeCsvFile(args.file if args.file else "presto_output.csv", values)
+    writeCsvFile(args.file or "presto_output.csv", values)

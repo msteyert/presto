@@ -1,19 +1,21 @@
 from fastapi import FastAPI, Request
 from src.core.sequence_utils import (
+    calcRtRange,
     createPBS,
     createPE3,
     createRT,
     clean_sequence,
     create_mutSeq,
     find_cas9_cut,
+    DEFAULT_PAM,
+    DEFAULT_PBS_RANGE,
+    find_deletion,
+    find_deletion_range,
 )
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from src.web.models import PegInput
-
-
-DEFAULTS = {"pbs_range": {"start": 8, "stop": 18}, "pam_seq": "NGG"}
 
 app = FastAPI()
 
@@ -41,7 +43,8 @@ async def root(request: Request):
 async def generate_rt(input: PegInput):
     cut = find_cas9_cut(input.wtSeq, input.spacer)
     mutSeq = create_mutSeq(input.wtSeq, input.mut)
-    rtInfo = createRT(mutSeq, input.mut, cut)
+    [delStart, _] = find_deletion_range(input.wtSeq)
+    rtInfo = createRT(mutSeq, input.mut, cut, delStart, calcRtRange(mutSeq))
     return [x for x in rtInfo if not x["startsWithC"]]
 
 
@@ -49,14 +52,14 @@ async def generate_rt(input: PegInput):
 async def generate_pbs(input: PegInput):
     cut = find_cas9_cut(input.wtSeq, input.spacer)
     mutSeq = create_mutSeq(input.wtSeq, input.mut)
-    return createPBS(mutSeq, cut, DEFAULTS["pbs_range"])
+    return createPBS(mutSeq, cut, DEFAULT_PBS_RANGE)
 
 
 @app.post("/generate/pe3")
 async def generate_pe3(input: PegInput):
     cut = find_cas9_cut(input.wtSeq, input.spacer)
     mutSeq = create_mutSeq(input.wtSeq, input.mut)
-    return createPE3(input.wtSeq, mutSeq, DEFAULTS["pam_seq"], cut)
+    return createPE3(input.wtSeq, mutSeq, DEFAULT_PAM, cut)
 
 
 @app.post("/generate/mutSeq")
