@@ -6,7 +6,7 @@ type Props = {
   title: string;
 };
 
-export default class SequenceOptions extends Component<Props> {
+export default class SequenceOptionsRadio extends Component<Props> {
   state = { value: this.props.options.length > 0 ? this.props.options[0] : '' };
   static defaultProps = { options: [] };
   handleChange = (

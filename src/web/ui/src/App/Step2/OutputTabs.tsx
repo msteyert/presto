@@ -14,14 +14,14 @@ const panes = [
         <Grid>
           <Grid.Row>
             <Grid.Column width={7}>
-              <div style={{ maxWidth: '100%', overflowX: 'scroll' }}>
-                <RTTemplates />
-              </div>
+              {/* <div style={{ maxWidth: '100%', overflowX: 'scroll' }}> */}
+              <RTTemplates />
+              {/* </div> */}
             </Grid.Column>
             <Grid.Column width={7}>
-              <div style={{ maxWidth: '100%', overflowX: 'scroll' }}>
-                <PBSOptions />
-              </div>
+              {/* <div style={{ maxWidth: '100%', overflowX: 'scroll' }}> */}
+              <PBSOptions />
+              {/* </div> */}
             </Grid.Column>
           </Grid.Row>
         </Grid>
@@ -36,14 +36,14 @@ const panes = [
         <Grid>
           <Grid.Row>
             <Grid.Column width={7}>
-              <div style={{ maxWidth: '100%', overflowX: 'scroll' }}>
-                <PE3BOptions />
-              </div>
+              {/* <div style={{ maxWidth: '100%', overflowX: 'auto' }}> */}
+              <PE3BOptions />
+              {/* </div> */}
             </Grid.Column>
             <Grid.Column width={7}>
-              <div style={{ maxWidth: '100%', overflowX: 'scroll' }}>
-                <PE3Options />
-              </div>
+              {/* <div style={{ maxWidth: '100%', overflowX: 'auto' }}> */}
+              <PE3Options />
+              {/* </div> */}
             </Grid.Column>
           </Grid.Row>
         </Grid>

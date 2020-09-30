@@ -1,11 +1,11 @@
 import React from 'react';
-import SequenceOptions from '../../components/SequenceOptions';
+import SequenceOptionsDropDown from '../../components/SequenceOptionsDropDown';
 import { useSequencePredictions } from '../../hooks';
 
 const PBSOptions = () => {
   const { pbsOptions } = useSequencePredictions();
   return (
-    <SequenceOptions
+    <SequenceOptionsDropDown
       title="Primer binding sites:"
       options={pbsOptions.map((option) => option.pbs)}
     />

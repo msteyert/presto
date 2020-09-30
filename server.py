@@ -5,12 +5,15 @@ from src.core.sequence_utils import (
     createPE3,
     createRT,
     clean_sequence,
+    create_final_wtSeq,
     create_mutSeq,
     find_cas9_cut,
     DEFAULT_PAM,
     DEFAULT_PBS_RANGE,
     find_deletion,
     find_deletion_range,
+    flip_strand_if_needed,
+    is_top_strand,
 )
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -35,31 +38,51 @@ templates = Jinja2Templates(directory="ui/build")
 
 @app.get("/")
 async def root(request: Request):
-    # return templates.TemplateResponse("main.jinja", {"request": request})
     return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.post("/generate/rt")
 async def generate_rt(input: PegInput):
-    cut = find_cas9_cut(input.wtSeq, input.spacer)
-    mutSeq = create_mutSeq(input.wtSeq, input.mut)
-    [delStart, _] = find_deletion_range(input.wtSeq)
-    rtInfo = createRT(mutSeq, input.mut, cut, delStart, calcRtRange(mutSeq))
-    return [x for x in rtInfo if not x["startsWithC"]]
+    # make sure the spacer sequence can be found
+    try:
+        isTopStrand = is_top_strand(input.wtSeq, input.spacer)
+        wtSeq = flip_strand_if_needed(input.wtSeq, input.spacer)
+    except ValueError:
+        print("ERROR: Spacer sequence not found")
+        return {"errors": ["Spacer sequence not found"]}
+
+    # Identify insertion and/or deletion
+    [delStart, delStop] = find_deletion_range(wtSeq)
+    deletion = find_deletion(wtSeq)
+    # Create mutant sequence by removing any deletions and adding any insertions
+    mutSeq = create_mutSeq(wtSeq, input.mut)
+    # Remove parentheses from user input wt sequence
+    wtFinal = create_final_wtSeq(input.wtSeq)
+    cut = find_cas9_cut(wtFinal, input.spacer)
+    wtSeq = wtFinal
+
+    return createRT(mutSeq, input.mut, cut, delStart, DEFAULT_PBS_RANGE)
 
 
 @app.post("/generate/pbs")
 async def generate_pbs(input: PegInput):
-    cut = find_cas9_cut(input.wtSeq, input.spacer)
     mutSeq = create_mutSeq(input.wtSeq, input.mut)
+    wtFinal = create_final_wtSeq(input.wtSeq)
+    cut = find_cas9_cut(wtFinal, input.spacer)
     return createPBS(mutSeq, cut, DEFAULT_PBS_RANGE)
 
 
 @app.post("/generate/pe3")
 async def generate_pe3(input: PegInput):
-    cut = find_cas9_cut(input.wtSeq, input.spacer)
     mutSeq = create_mutSeq(input.wtSeq, input.mut)
-    return createPE3(input.wtSeq, mutSeq, DEFAULT_PAM, cut)
+    wtFinal = create_final_wtSeq(input.wtSeq)
+    cut = find_cas9_cut(wtFinal, input.spacer)
+    print(createPE3(wtFinal, mutSeq, DEFAULT_PAM, cut))
+    return [
+        x
+        for x in createPE3(wtFinal, mutSeq, DEFAULT_PAM, cut)
+        if len(x.get("secondGuide", "")) > 0
+    ]
 
 
 @app.post("/generate/mutSeq")

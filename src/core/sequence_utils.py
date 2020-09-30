@@ -220,15 +220,22 @@ def clean_sequence(wtSeq):
     return wtSeq.translate({ord(i): None for i in "()"})
 
 
+def create_final_wtSeq(wtSeq):
+    [delStart, delStop] = find_deletion_range(wtSeq)
+    deletion = find_deletion(wtSeq)
+    return wtSeq[0:delStart] + deletion + wtSeq[delStop + 1 : len(wtSeq)]
+
+
 def find_spacer_cut(sequence, spacer):
     "find the cut site given the spacer"
     return sequence.find(spacer)
 
 
 def is_top_strand(sequence, spacer):
-    if find_spacer_cut(sequence, spacer) > 0:
+    final_sequence = create_final_wtSeq(sequence)
+    if find_spacer_cut(final_sequence, spacer) > 0:
         return True
-    if find_spacer_cut(revComp(sequence), spacer) > 0:
+    if find_spacer_cut(revComp(final_sequence), spacer) > 0:
         return False
     raise ValueError("Spacer sequence not found")
 
@@ -242,7 +249,7 @@ def find_cas9_cut(sequence, spacer):
     """Cas9 cuts 3 positions from the 3' end of the spacer. adjust the cut
     position into the spacer"""
     cut = find_spacer_cut(sequence, spacer)
-    return cut + len(spacer) - 3
+    return cut + len(spacer) - CUT_TO_PAM_LENGTH
 
 
 def ensure_5_prime_cut(cut, delStart):

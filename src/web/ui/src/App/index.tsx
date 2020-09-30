@@ -16,7 +16,7 @@ function App() {
       <AppMenu />
       <Grid centered>
         <Steps />
-        {step === 0 && <Step1 />}
+        <Step1 />
         {step === 1 && <Step2 />}
       </Grid>
     </div>

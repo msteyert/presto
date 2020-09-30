@@ -1,9 +1,15 @@
 "main program logic for presto"
 
 from src.core.sequence_utils import (
-    CUT_TO_PAM_LENGTH,
     GUIDE_LENGTH,
     TOO_FAR_FROM_CUT,
+    create_final_wtSeq,
+    create_mutSeq,
+    find_cas9_cut,
+    find_deletion,
+    find_deletion_range,
+    flip_strand_if_needed,
+    is_top_strand,
     revComp,
     createRT,
     createPBS,
@@ -22,31 +28,22 @@ def main(inputs):
     pbsRange = inputs["pbsRange"]
     rtRange = inputs["rtRange"]
 
+    # make sure the spacer sequence can be found
+    try:
+        isTopStrand = is_top_strand(wtSeq, spacer)
+        wtSeq = flip_strand_if_needed(wtSeq, spacer)
+    except ValueError:
+        print("ERROR: Spacer sequence not found")
+        return {"errors": ["Spacer sequence not found"]}
+
     # Identify insertion and/or deletion
-    [delStart, delStop] = [wtSeq.find("("), wtSeq.find(")")]
-    deletion = wtSeq[delStart + 1 : delStop]
+    [delStart, delStop] = find_deletion_range(wtSeq)
+    deletion = find_deletion(wtSeq)
     # Create mutant sequence by removing any deletions and adding any insertions
-    mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop + 1 : len(wtSeq)]
+    mutSeq = create_mutSeq(wtSeq, mut)
     # Remove parentheses from user input wt sequence
-    wtFinal = wtSeq[0:delStart] + deletion + wtSeq[delStop + 1 : len(wtSeq)]
-    cut = wtFinal.find(spacer)
-
-    isTopStrand = True
-    if cut < 0:
-        # Flip sequence if the spacer is found on the bottom strand
-        isTopStrand = False
-        wtSeq = revComp(wtSeq)
-        mut = revComp(mut)
-        [delStart, delStop] = [wtSeq.find("("), wtSeq.find(")")]
-        deletion = wtSeq[delStart + 1 : delStop]
-        mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop + 1 : len(wtSeq)]
-        wtFinal = wtSeq[0:delStart] + deletion + wtSeq[delStop + 1 : len(wtSeq)]
-        cut = wtFinal.find(spacer)
-        if cut < 0:
-            print("ERROR: Spacer sequence not found")
-            return {"errors": ["Spacer sequence not found"]}
-
-    cut += len(spacer) - CUT_TO_PAM_LENGTH
+    wtFinal = create_final_wtSeq(wtSeq)
+    cut = find_cas9_cut(wtFinal, spacer)
     wtSeq = wtFinal
 
     # Ensure that the cut site is 5' of the mutation

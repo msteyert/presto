@@ -1,11 +1,11 @@
 import React from 'react';
-import SequenceOptions from '../../components/SequenceOptions';
+import SequenceOptionsDropDown from '../../components/SequenceOptionsDropDown';
 import { useSequencePredictions } from '../../hooks';
 
 const RTTemplates = () => {
   const { templateOptions } = useSequencePredictions();
   return (
-    <SequenceOptions
+    <SequenceOptionsDropDown
       title="RT templates:"
       options={templateOptions.map((option) => option.rt)}
     />
