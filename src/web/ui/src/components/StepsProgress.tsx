@@ -20,13 +20,6 @@ const Steps = ({ step = 0 }: Props) => (
         <Step.Description>Design your pegRNA</Step.Description>
       </Step.Content>
     </Step>
-
-    <Step completed={step > 2} active={step === 2}>
-      <Step.Content>
-        <Step.Title>Build</Step.Title>
-        <Step.Description>Build cloning constructs</Step.Description>
-      </Step.Content>
-    </Step>
   </Step.Group>
 );
 

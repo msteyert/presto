@@ -3,11 +3,16 @@ import SequenceOptionsDropDown from '../../components/SequenceOptionsDropDown';
 import { useSequencePredictions } from '../../hooks';
 
 const RTTemplates = () => {
-  const { templateOptions } = useSequencePredictions();
+  const {
+    templateOptions,
+    updateSelectedTemplateOption,
+  } = useSequencePredictions();
+
   return (
     <SequenceOptionsDropDown
       title="RT templates:"
       options={templateOptions.map((option) => option.rt)}
+      onChange={updateSelectedTemplateOption}
     />
   );
 };

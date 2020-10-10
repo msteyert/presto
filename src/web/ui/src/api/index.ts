@@ -59,3 +59,23 @@ export const generateCleanWtSeq = async (
   });
   return await res.json();
 };
+
+export const generatePegRNA = async (
+  spacer: string,
+  rtt: string,
+  pbs: string,
+) => {
+  const res = await fetch(`${API_ROOT}/generate/pegrna`, {
+    method: 'post',
+    body: JSON.stringify({ spacer, rtt, pbs }),
+  });
+  return await res.json();
+};
+
+export const generateSgRNA = async (pe3: string) => {
+  const res = await fetch(`${API_ROOT}/generate/sgrna`, {
+    method: 'post',
+    body: JSON.stringify({ pe3 }),
+  });
+  return await res.json();
+};

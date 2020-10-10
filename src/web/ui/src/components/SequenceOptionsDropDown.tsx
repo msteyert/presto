@@ -1,19 +1,22 @@
 import React, { Component, SyntheticEvent } from 'react';
-import { DropdownProps } from 'semantic-ui-react';
-import { Dropdown } from 'semantic-ui-react';
+import { Dropdown, DropdownProps } from 'semantic-ui-react';
 
 type Props = {
   options: string[];
   title: string;
+  onChange: (sequence: string) => void;
 };
 
 export default class SequenceOptionsDropdown extends Component<Props> {
   state = { value: this.props.options.length > 0 ? this.props.options[0] : '' };
-  static defaultProps = { options: [] };
+  static defaultProps = { options: [], onChange: (_: string) => {} };
   handleChange = (
     _: SyntheticEvent<HTMLElement, Event>,
     { value }: DropdownProps,
-  ) => this.setState({ value });
+  ) => {
+    this.setState({ value });
+    this.props.onChange(value as string);
+  };
 
   render() {
     const { value } = this.state;

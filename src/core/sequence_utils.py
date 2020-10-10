@@ -1,3 +1,4 @@
+from math import ceil, floor
 import re
 import math
 
@@ -44,6 +45,16 @@ AMBIGUOUS_BASES = {
     "H": "[A,T,C]",
     "B": "[C,G,T]",
 }
+
+FIVE_PRIME_FILLER = (
+    "gtgagcaagggcgaggaggacatggtcgtaccgtcacgcttgccatcatGGGTTATTGTCTCATGAG"
+)
+THREE_BP_BBSI = "CGGGAAGACctCACC"
+CAS9_SCAFFOLD = "gtttcagagctatgctggaaacagcatagcaagttgaaataaggctagtccgttatcaacttgaaaaagtggcaccgagtcggtgc"
+TERM_BBSI_3BP = "TTTTgccgGTCTTCtaa"
+THREE_PRIME_FILLER = "tggtttcttagacgtcactctcgtcaccgtcgtgaagcaccggcggcatggacgagctgtacaag"
+SENSE_PE3_OVERHANG = "cacc"
+ANTISENSE_PE3_OVERHANG = "aaac"
 
 
 def revComp(seq):
@@ -258,3 +269,34 @@ def ensure_5_prime_cut(cut, delStart):
         raise ValueError(
             "The spacer must cut upstream (5') of the mutated region. Select a new spacer and try again."
         )
+
+
+def build_untrimmed_pegRNA(spacer: str, rtt: str, pbs: str):
+    """builds the final but untrimmed pegRNA from the given spacer,
+    reverse transcriptase template, and primer binding site"""
+    return f"{FIVE_PRIME_FILLER}{THREE_BP_BBSI}{spacer}{CAS9_SCAFFOLD}{rtt}{pbs}{TERM_BBSI_3BP}{THREE_PRIME_FILLER}"
+
+
+def trim_sequence(sequence: str, target_length: int = 250):
+    """trims sequence to desired length by symetrically removing bases from the 5' and 3' ends.
+    If the sequence is already under the target length, it is returned unchanged. If the sequence
+    is an odd number length, the 5 prime end is trimmed down one extra base to reach the
+    target length"""
+    if len(sequence) <= target_length:
+        return sequence
+    bases_to_trim = (len(sequence) - target_length) / 2
+    five_prime_trim = ceil(bases_to_trim)
+    three_prime_trim = floor(bases_to_trim)
+    print(bases_to_trim, five_prime_trim, three_prime_trim)
+    return sequence[five_prime_trim:][:-three_prime_trim]
+
+
+def build_pe3_sgRNA(sequence: str):
+    "builds the sense and antisense pe3 sgRNA from the given pe3 sequence"
+    if sequence[0].lower() != "g":
+        sequence = f"g{sequence}"
+    return {
+        "sense": f"{SENSE_PE3_OVERHANG}{sequence}",
+        "antisense": f"{ANTISENSE_PE3_OVERHANG}{revComp(sequence)}",
+    }
+

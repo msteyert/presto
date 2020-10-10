@@ -27,11 +27,17 @@ export type PE3Option = {
 };
 
 export type GlobalState = {
+  spacer: string;
   templateOptions: TemplateOption[];
+  selectedTemplateOption: string | null;
   pbsOptions: PBSOption[];
+  selectedPbsOption: string | null;
   pe3bOptions: PE3Option[];
   pe3Options: PE3Option[];
+  selectedPe3Option: string | null;
   cleanWtSeq: string;
   cleanMutSeq: string;
   step: number;
+  pegRNA: string;
+  sgRNA: string;
 };

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from src.core.sequence_utils import (
-    calcRtRange,
+    build_pe3_sgRNA,
     createPBS,
     createPE3,
     createRT,
@@ -14,11 +14,13 @@ from src.core.sequence_utils import (
     find_deletion_range,
     flip_strand_if_needed,
     is_top_strand,
+    build_untrimmed_pegRNA,
+    trim_sequence,
 )
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from src.web.models import PegInput
+from src.web.models import Pe3ResultInput, PegInput, PegResultInput
 
 app = FastAPI()
 
@@ -93,3 +95,14 @@ async def generate_mut_seq(input: PegInput):
 @app.post("/generate/cleanWtSeq")
 async def generate_wt_seq(input: PegInput):
     return {"sequence": clean_sequence(input.wtSeq)}
+
+
+@app.post("/generate/pegrna")
+async def generate_pegrna(input: PegResultInput):
+    untrimmed = build_untrimmed_pegRNA(input.spacer, input.rtt, input.pbs)
+    return {"sequence": trim_sequence(untrimmed)}
+
+
+@app.post("/generate/sgrna")
+async def generate_pegrna(input: Pe3ResultInput):
+    return build_pe3_sgRNA(input.pe3)

@@ -4,6 +4,7 @@ import RTTemplates from './RTTemplates';
 import PBSOptions from './PBSOptions';
 import PE3BOptions from './PE3BOptions';
 import PE3Options from './PE3Options';
+import PegRNA from './PegRNA';
 
 const panes = [
   {
@@ -13,15 +14,16 @@ const panes = [
       <Tab.Pane>
         <Grid>
           <Grid.Row>
-            <Grid.Column width={7}>
-              {/* <div style={{ maxWidth: '100%', overflowX: 'scroll' }}> */}
+            <Grid.Column width={8}>
               <RTTemplates />
-              {/* </div> */}
             </Grid.Column>
-            <Grid.Column width={7}>
-              {/* <div style={{ maxWidth: '100%', overflowX: 'scroll' }}> */}
+            <Grid.Column width={8}>
               <PBSOptions />
-              {/* </div> */}
+            </Grid.Column>
+          </Grid.Row>
+          <Grid.Row>
+            <Grid.Column width={16}>
+              <PegRNA />
             </Grid.Column>
           </Grid.Row>
         </Grid>
@@ -36,14 +38,10 @@ const panes = [
         <Grid>
           <Grid.Row>
             <Grid.Column width={7}>
-              {/* <div style={{ maxWidth: '100%', overflowX: 'auto' }}> */}
               <PE3BOptions />
-              {/* </div> */}
             </Grid.Column>
             <Grid.Column width={7}>
-              {/* <div style={{ maxWidth: '100%', overflowX: 'auto' }}> */}
               <PE3Options />
-              {/* </div> */}
             </Grid.Column>
           </Grid.Row>
         </Grid>
