@@ -35,9 +35,17 @@ export type GlobalState = {
   pe3bOptions: PE3Option[];
   pe3Options: PE3Option[];
   selectedPe3Option: string | null;
+  selectedPe3bOption: string | null;
   cleanWtSeq: string;
   cleanMutSeq: string;
   step: number;
   pegRNA: string;
-  sgRNA: string;
+  pe3sgRNA: {
+    sense: string;
+    antisense: string;
+  };
+  pe3bsgRNA: {
+    sense: string;
+    antisense: string;
+  };
 };

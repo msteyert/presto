@@ -47,14 +47,14 @@ AMBIGUOUS_BASES = {
 }
 
 FIVE_PRIME_FILLER = (
-    "gtgagcaagggcgaggaggacatggtcgtaccgtcacgcttgccatcatGGGTTATTGTCTCATGAG"
+    "GTGAGCAAGGGCGAGGAGGACATGGTCGTACCGTCACGCTTGCCATCATGGGTTATTGTCTCATGAG"
 )
-THREE_BP_BBSI = "CGGGAAGACctCACC"
-CAS9_SCAFFOLD = "gtttcagagctatgctggaaacagcatagcaagttgaaataaggctagtccgttatcaacttgaaaaagtggcaccgagtcggtgc"
-TERM_BBSI_3BP = "TTTTgccgGTCTTCtaa"
-THREE_PRIME_FILLER = "tggtttcttagacgtcactctcgtcaccgtcgtgaagcaccggcggcatggacgagctgtacaag"
-SENSE_PE3_OVERHANG = "cacc"
-ANTISENSE_PE3_OVERHANG = "aaac"
+THREE_BP_BBSI = "CGGGAAGACCTCACC"
+CAS9_SCAFFOLD = "GTTTCAGAGCTATGCTGGAAACAGCATAGCAAGTTGAAATAAGGCTAGTCCGTTATCAACTTGAAAAAGTGGCACCGAGTCGGTGC"
+TERM_BBSI_3BP = "TTTTGCCGGTCTTCTAA"
+THREE_PRIME_FILLER = "TGGTTTCTTAGACGTCACTCTCGTCACCGTCGTGAAGCACCGGCGGCATGGACGAGCTGTACAAG"
+SENSE_PE3_OVERHANG = "CACC"
+ANTISENSE_PE3_OVERHANG = "AAAC"
 
 
 def revComp(seq):
@@ -293,8 +293,8 @@ def trim_sequence(sequence: str, target_length: int = 250):
 
 def build_pe3_sgRNA(sequence: str):
     "builds the sense and antisense pe3 sgRNA from the given pe3 sequence"
-    if sequence[0].lower() != "g":
-        sequence = f"g{sequence}"
+    if sequence[0].lower() != "G":
+        sequence = f"G{sequence}"
     return {
         "sense": f"{SENSE_PE3_OVERHANG}{sequence}",
         "antisense": f"{ANTISENSE_PE3_OVERHANG}{revComp(sequence)}",
