@@ -8,7 +8,9 @@ type Props = {
 };
 
 export default class SequenceOptionsDropdown extends Component<Props> {
-  state = { value: this.props.options.length > 0 ? this.props.options[0] : '' };
+  state = {
+    value: this.props.options.length > 0 ? this.props.options[0] : '',
+  };
   static defaultProps = { options: [], onChange: (_: string) => {} };
   handleChange = (
     _: SyntheticEvent<HTMLElement, Event>,
@@ -32,9 +34,9 @@ export default class SequenceOptionsDropdown extends Component<Props> {
             value: o,
           }))}
           placeholder="Choose an option"
+          value={value}
           selection
           scrolling
-          value={value}
         />
       </div>
     );
