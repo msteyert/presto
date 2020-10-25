@@ -27,6 +27,8 @@ export type PE3Option = {
 };
 
 export type GlobalState = {
+  wtSeq: string;
+  mut: string;
   spacer: string;
   templateOptions: TemplateOption[];
   selectedTemplateOption: string | null;

@@ -1,26 +1,30 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
 from src.core.sequence_utils import (
+    DEFAULT_PAM,
+    DEFAULT_PBS_RANGE,
     build_pe3_sgRNA,
-    createPBS,
-    createPE3,
-    createRT,
+    build_untrimmed_pegRNA,
     clean_sequence,
     create_final_wtSeq,
     create_mutSeq,
+    createPBS,
+    createPE3,
+    createRT,
     find_cas9_cut,
-    DEFAULT_PAM,
-    DEFAULT_PBS_RANGE,
     find_deletion,
     find_deletion_range,
     flip_strand_if_needed,
     is_top_strand,
-    build_untrimmed_pegRNA,
     trim_sequence,
 )
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
 from src.web.models import Pe3ResultInput, PegInput, PegResultInput
+
+from datetime import datetime
 
 app = FastAPI()
 
@@ -106,3 +110,15 @@ async def generate_pegrna(input: PegResultInput):
 @app.post("/generate/sgrna")
 async def generate_pegrna(input: Pe3ResultInput):
     return build_pe3_sgRNA(input.pe3)
+
+
+@app.post("/generate/csv")
+async def generate_csv(input: PegInput):
+    filename = f"presto-{datetime.now()}.csv"
+    return FileResponse(
+        "OUTPUT.csv",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}",
+            "FileName": filename,
+        },
+    )
