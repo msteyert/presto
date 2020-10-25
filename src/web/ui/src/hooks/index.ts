@@ -11,6 +11,8 @@ import { GlobalState, PE3Option } from '../types/presto';
 import { createGlobalState } from 'react-hooks-global-state';
 
 const initialState: GlobalState = {
+  wtSeq: '',
+  mut: '',
   spacer: '',
   templateOptions: [],
   selectedTemplateOption: null,
@@ -35,6 +37,8 @@ export function useSequencePredictions() {
     'templateOptions',
   );
 
+  const [wtSeq, setWtSeq] = useGlobalState('spacer');
+  const [mut, setMut] = useGlobalState('spacer');
   const [spacer, setSpacer] = useGlobalState('spacer');
   const [pbsOptions, setPBSOptions] = useGlobalState('pbsOptions');
   const [pe3bOptions, setPe3bOptions] = useGlobalState('pe3bOptions');
@@ -67,6 +71,11 @@ export function useSequencePredictions() {
         spacer.toUpperCase(),
       ),
     );
+
+    setWtSeq(wtSeq.toUpperCase());
+    setMut(mut.toUpperCase());
+    setSpacer(spacer.toUpperCase());
+
     if (getGlobalState('templateOptions').length > 0) {
       setSelectedTemplateOption(getGlobalState('templateOptions')[0].rt);
     }
@@ -147,6 +156,8 @@ export function useSequencePredictions() {
   }
 
   return {
+    wtSeq,
+    mut,
     spacer,
     templateOptions,
     pbsOptions,

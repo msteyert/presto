@@ -79,3 +79,28 @@ export const generateSgRNA = async (pe3: string) => {
   });
   return await res.json();
 };
+
+export const generateCSV = async (
+  wtSeq: string,
+  mut: string,
+  spacer: string,
+) => {
+  const res = await fetch(`${API_ROOT}/generate/csv`, {
+    method: 'post',
+    body: JSON.stringify({ wtSeq, mut, spacer }),
+  });
+  const responseText = await res.text();
+  const url = window.URL.createObjectURL(new Blob([responseText]));
+  const link = document.createElement('a');
+  link.id = 'download';
+  link.href = url;
+  link.setAttribute('download', res.headers.get('FileName') || 'presto.csv');
+  document.body.appendChild(link);
+  link.click();
+
+  const elem = document.querySelector('#download');
+
+  if (elem && elem.parentNode) {
+    elem.parentNode.removeChild(elem);
+  }
+};
