@@ -7,6 +7,7 @@ DEFAULT_PAM = "NGG"
 DEFAULT_PBS_RANGE = {"start": 8, "stop": 18}
 # Constants
 CUT_TO_PAM_LENGTH = 3
+SPACER_END_TO_CUT = 3
 GUIDE_LENGTH = 20
 GUIDE_TEST_LENGTH = GUIDE_LENGTH - 4
 TOO_FAR_FROM_CUT = 10
@@ -306,27 +307,41 @@ def create_spacers(wtSeq, mutSeq, pamSeq):
     delStop = wtSeq.find(")") - 1
     cleanSeq = wtSeq.replace("(", "").replace(")", "")
 
-    forwardSeq = cleanSeq[0: delStart] + cleanSeq[delStart: delStart + len(pamSeq)]
-    backwardSeq = revComp(cleanSeq[delStop - len(pamSeq): delStop] + cleanSeq[delStop: len(cleanSeq)])
-
     # Find all pams and create spacers
     spacerInfo = []
-    for partialSeq in [forwardSeq, backwardSeq]:
-        pams = re.finditer(ntToRegex(pamSeq), partialSeq)
+    for partial in [
+        {
+            "wt": (
+                cleanSeq[0: delStart] +
+                cleanSeq[delStart: delStart + len(pamSeq) + SPACER_END_TO_CUT]
+            ),
+            "mut": mutSeq,
+        },
+        {
+            "wt": revComp(
+                cleanSeq[delStop - len(pamSeq) - SPACER_END_TO_CUT: delStop] +
+                cleanSeq[delStop: len(cleanSeq)]
+            ),
+            "mut": revComp(mutSeq),
+        }
+    ]:
+        pams = re.finditer(ntToRegex(pamSeq), partial["wt"])
         for match in pams:
             pam = match.group(1)
             i = match.start(1)
             if (i > GUIDE_LENGTH):
-                spacer = partialSeq[i-GUIDE_LENGTH: i]
-                testSeq = partialSeq[i-GUIDE_TEST_LENGTH: i+len(pamSeq)]
-                cutToMut = (len(partialSeq)-len(pamSeq)) - (i-CUT_TO_PAM_LENGTH)
+                spacer = partial["wt"][i-GUIDE_LENGTH: i]
+                testSeq = partial["wt"][i-GUIDE_TEST_LENGTH: i+len(pamSeq)]
+                cutToMut = (len(partial["wt"])-len(pamSeq)) - (i-CUT_TO_PAM_LENGTH)
                 if (cutToMut < TOO_FAR_FROM_CUT):
                     info = {
                         "spacer": spacer,
                         "cutToMut": cutToMut,
-                        "quality": "good" if mutSeq.find(testSeq) < 0 else "acceptable",
+                        "quality": 1 if partial["mut"].find(testSeq) < 0 else 2,
                     }
                     spacerInfo.append(info)
 
     spacerInfo.sort(key=lambda info: info["cutToMut"])
+    spacerInfo.sort(key=lambda info: info["quality"])
+
     return spacerInfo
