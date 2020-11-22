@@ -13,10 +13,28 @@ const Submit = () => {
   const { getCleanMutSeq } = useCleanMutSeq();
   const { setStep } = useStep();
 
-  async function onSubmit(wtSeq: string, mut: string, spacer: string) {
-    getCleanWtSeq(wtSeq, mut, spacer);
-    getCleanMutSeq(wtSeq, mut, spacer);
-    await updateSequencePredictions(wtSeq, mut, spacer);
+  async function onSubmit(
+    wtSeq: string,
+    mut: string,
+    spacer: string,
+    pam: string,
+    minPbs: number,
+    maxPbs: number,
+    minRt: number,
+    maxRt: number,
+  ) {
+    getCleanWtSeq(wtSeq, mut, spacer, pam, minPbs, maxPbs, minRt, maxRt);
+    getCleanMutSeq(wtSeq, mut, spacer, pam, minPbs, maxPbs, minRt, maxRt);
+    await updateSequencePredictions(
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
+    );
     setStep(1);
   }
   return <SubmitForm onSubmit={onSubmit} />;

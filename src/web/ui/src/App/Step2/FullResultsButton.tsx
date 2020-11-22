@@ -4,8 +4,18 @@ import { generateCSV } from '../../api';
 import { useSequencePredictions } from '../../hooks';
 
 const FullResultsButton = () => {
-  const { wtSeq, mut, spacer } = useSequencePredictions();
-  const handleClick = () => generateCSV(wtSeq, mut, spacer);
+  const {
+    wtSeq,
+    mut,
+    spacer,
+    pam,
+    minPbs,
+    maxPbs,
+    minRt,
+    maxRt,
+  } = useSequencePredictions();
+  const handleClick = () =>
+    generateCSV(wtSeq, mut, spacer, pam, minPbs, maxPbs, minRt, maxRt);
   return (
     <Button onClick={handleClick} primary>
       Donwnload Full Results

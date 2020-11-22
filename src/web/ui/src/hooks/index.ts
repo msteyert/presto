@@ -14,6 +14,11 @@ const initialState: GlobalState = {
   wtSeq: '',
   mut: '',
   spacer: '',
+  pam: 'NGG',
+  minPbs: 8,
+  maxPbs: 18,
+  minRt: 9,
+  maxRt: 16,
   templateOptions: [],
   selectedTemplateOption: null,
   pbsOptions: [],
@@ -37,9 +42,16 @@ export function useSequencePredictions() {
     'templateOptions',
   );
 
-  const [wtSeq, setWtSeq] = useGlobalState('spacer');
-  const [mut, setMut] = useGlobalState('spacer');
+  const [wtSeq, setWtSeq] = useGlobalState('wtSeq');
+  const [mut, setMut] = useGlobalState('mut');
   const [spacer, setSpacer] = useGlobalState('spacer');
+
+  const [pam, setPam] = useGlobalState('pam');
+  const [minPbs, setMinPbs] = useGlobalState('minPbs');
+  const [maxPbs, setMaxPbs] = useGlobalState('maxPbs');
+  const [minRt, setMinRt] = useGlobalState('minRt');
+  const [maxRt, setMaxRt] = useGlobalState('maxRt');
+
   const [pbsOptions, setPBSOptions] = useGlobalState('pbsOptions');
   const [pe3bOptions, setPe3bOptions] = useGlobalState('pe3bOptions');
   const [pe3Options, setPe3Options] = useGlobalState('pe3Options');
@@ -63,18 +75,34 @@ export function useSequencePredictions() {
     wtSeq: string,
     mut: string,
     spacer: string,
+    pam: string,
+    minPbs: number,
+    maxPbs: number,
+    minRt: number,
+    maxRt: number,
   ) {
     setTemplateOptions(
       await generateTemplateOptions(
         wtSeq.toUpperCase(),
         mut.toUpperCase(),
         spacer.toUpperCase(),
+        pam.toUpperCase(),
+        minPbs,
+        maxPbs,
+        minRt,
+        maxRt,
       ),
     );
 
     setWtSeq(wtSeq.toUpperCase());
     setMut(mut.toUpperCase());
     setSpacer(spacer.toUpperCase());
+
+    setPam(pam.toUpperCase());
+    setMinPbs(minPbs);
+    setMaxPbs(maxPbs);
+    setMinRt(minRt);
+    setMaxRt(maxRt);
 
     if (getGlobalState('templateOptions').length > 0) {
       setSelectedTemplateOption(getGlobalState('templateOptions')[0].rt);
@@ -84,6 +112,11 @@ export function useSequencePredictions() {
         wtSeq.toUpperCase(),
         mut.toUpperCase(),
         spacer.toUpperCase(),
+        pam.toUpperCase(),
+        minPbs,
+        maxPbs,
+        minRt,
+        maxRt,
       ),
     );
     if (getGlobalState('pbsOptions').length > 0) {
@@ -93,6 +126,11 @@ export function useSequencePredictions() {
       wtSeq.toUpperCase(),
       mut.toUpperCase(),
       spacer.toUpperCase(),
+      pam.toUpperCase(),
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
     );
     setPe3bOptions(pe3Options.filter((option) => option.type === 'pe3b'));
     if (getGlobalState('pe3bOptions').length > 0) {
@@ -159,6 +197,11 @@ export function useSequencePredictions() {
     wtSeq,
     mut,
     spacer,
+    pam,
+    minPbs,
+    maxPbs,
+    minRt,
+    maxRt,
     templateOptions,
     pbsOptions,
     pe3bOptions,
@@ -180,11 +223,25 @@ export function useSequencePredictions() {
 
 export function useCleanWtSeq() {
   const [cleanWtSeq, setCleanWtSeq] = useGlobalState('cleanWtSeq');
-  async function getCleanWtSeq(wtSeq: string, mut: string, spacer: string) {
+  async function getCleanWtSeq(
+    wtSeq: string,
+    mut: string,
+    spacer: string,
+    pam: string,
+    minPbs: number,
+    maxPbs: number,
+    minRt: number,
+    maxRt: number,
+  ) {
     const { sequence } = await generateCleanWtSeq(
       wtSeq.toUpperCase(),
       mut.toUpperCase(),
       spacer.toUpperCase(),
+      pam.toUpperCase(),
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
     );
     setCleanWtSeq(sequence);
   }
@@ -195,11 +252,25 @@ export function useCleanWtSeq() {
 }
 export function useCleanMutSeq() {
   const [cleanMutSeq, setCleanMutSeq] = useGlobalState('cleanMutSeq');
-  async function getCleanMutSeq(wtSeq: string, mut: string, spacer: string) {
+  async function getCleanMutSeq(
+    wtSeq: string,
+    mut: string,
+    spacer: string,
+    pam: string,
+    minPbs: number,
+    maxPbs: number,
+    minRt: number,
+    maxRt: number,
+  ) {
     const { sequence } = await generateMutSeq(
       wtSeq.toUpperCase(),
       mut.toUpperCase(),
       spacer.toUpperCase(),
+      pam.toUpperCase(),
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
     );
     setCleanMutSeq(sequence);
   }

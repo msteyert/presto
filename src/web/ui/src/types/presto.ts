@@ -30,6 +30,11 @@ export type GlobalState = {
   wtSeq: string;
   mut: string;
   spacer: string;
+  pam: string;
+  minPbs: number;
+  maxPbs: number;
+  minRt: number;
+  maxRt: number;
   templateOptions: TemplateOption[];
   selectedTemplateOption: string | null;
   pbsOptions: PBSOption[];
