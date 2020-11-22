@@ -1,14 +1,20 @@
+import os
+from io import StringIO
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from uuid import uuid4
+
+from starlette.responses import StreamingResponse
 
 from src.core.sequence_utils import (
     DEFAULT_PAM,
     DEFAULT_PBS_RANGE,
     build_pe3_sgRNA,
     build_untrimmed_pegRNA,
+    calcRtRange,
     clean_sequence,
     create_final_wtSeq,
     create_mutSeq,
@@ -22,6 +28,8 @@ from src.core.sequence_utils import (
     is_top_strand,
     trim_sequence,
 )
+from src.core.csv import writeCsvFile
+from src.core.main import main
 from src.web.models import Pe3ResultInput, PegInput, PegResultInput
 
 from datetime import datetime
@@ -114,11 +122,49 @@ async def generate_pegrna(input: Pe3ResultInput):
 
 @app.post("/generate/csv")
 async def generate_csv(input: PegInput):
+
+    if input.minPbs and input.maxPbs:
+        pbsRange = {"start": input.minPbs, "stop": input.maxPbs}
+    else:
+        pbsRange = {
+            "start": DEFAULT_PBS_RANGE["start"],
+            "stop": DEFAULT_PBS_RANGE["stop"],
+        }
+
+    if input.minRt and input.maxRt:
+        rtRange = {"start": input.minRt, "stop": input.maxRt}
+    else:
+        rtRange = calcRtRange(input.mut)
+
+    inputs = {
+        "wildtype": input.wtSeq,
+        "mutation": input.mut,
+        "spacer": input.spacer,
+        "pam": input.pam or DEFAULT_PAM,
+        "pbsRange": pbsRange,
+        "rtRange": rtRange,
+    }
+
     filename = f"presto-{datetime.now()}.csv"
-    return FileResponse(
-        "OUTPUT.csv",
+    local_file_path = f"{str(uuid4())}.csv"
+    values = main(inputs)
+    writeCsvFile(local_file_path, values)
+
+    csv_stream = StringIO()
+    with open(local_file_path, "r") as f:
+        for line in f.readlines():
+            print(line, sep=os.linesep, file=csv_stream)
+
+    if os.path.exists(local_file_path):
+        os.remove(local_file_path)
+
+    response = StreamingResponse(
+        iter([csv_stream.getvalue()]),
+        media_type="text/csv",
         headers={
             "Content-Disposition": f"attachment; filename={filename}",
             "FileName": filename,
         },
     )
+
+    return response

@@ -4,10 +4,24 @@ export const generateTemplateOptions = async (
   wtSeq: string,
   mut: string,
   spacer: string,
+  pam: string,
+  minPbs: number,
+  maxPbs: number,
+  minRt: number,
+  maxRt: number,
 ) => {
   const res = await fetch(`${API_ROOT}/generate/rt`, {
     method: 'post',
-    body: JSON.stringify({ wtSeq, mut, spacer }),
+    body: JSON.stringify({
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
+    }),
   });
   return await res.json();
 };
@@ -16,10 +30,24 @@ export const generatePrimerBindingSiteOptions = async (
   wtSeq: string,
   mut: string,
   spacer: string,
+  pam: string,
+  minPbs: number,
+  maxPbs: number,
+  minRt: number,
+  maxRt: number,
 ) => {
   const res = await fetch(`${API_ROOT}/generate/pbs`, {
     method: 'post',
-    body: JSON.stringify({ wtSeq, mut, spacer }),
+    body: JSON.stringify({
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
+    }),
   });
   return await res.json();
 };
@@ -28,10 +56,24 @@ export const generatePe3Options = async (
   wtSeq: string,
   mut: string,
   spacer: string,
+  pam: string,
+  minPbs: number,
+  maxPbs: number,
+  minRt: number,
+  maxRt: number,
 ) => {
   const res = await fetch(`${API_ROOT}/generate/pe3`, {
     method: 'post',
-    body: JSON.stringify({ wtSeq, mut, spacer }),
+    body: JSON.stringify({
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
+    }),
   });
   return await res.json();
 };
@@ -40,10 +82,24 @@ export const generateMutSeq = async (
   wtSeq: string,
   mut: string,
   spacer: string,
+  pam: string,
+  minPbs: number,
+  maxPbs: number,
+  minRt: number,
+  maxRt: number,
 ) => {
   const res = await fetch(`${API_ROOT}/generate/mutSeq`, {
     method: 'post',
-    body: JSON.stringify({ wtSeq, mut, spacer }),
+    body: JSON.stringify({
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
+    }),
   });
   return await res.json();
 };
@@ -52,10 +108,24 @@ export const generateCleanWtSeq = async (
   wtSeq: string,
   mut: string,
   spacer: string,
+  pam: string,
+  minPbs: number,
+  maxPbs: number,
+  minRt: number,
+  maxRt: number,
 ) => {
   const res = await fetch(`${API_ROOT}/generate/cleanWtSeq`, {
     method: 'post',
-    body: JSON.stringify({ wtSeq, mut, spacer }),
+    body: JSON.stringify({
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
+    }),
   });
   return await res.json();
 };
@@ -84,10 +154,24 @@ export const generateCSV = async (
   wtSeq: string,
   mut: string,
   spacer: string,
+  pam: string,
+  minPbs: number,
+  maxPbs: number,
+  minRt: number,
+  maxRt: number,
 ) => {
   const res = await fetch(`${API_ROOT}/generate/csv`, {
     method: 'post',
-    body: JSON.stringify({ wtSeq, mut, spacer }),
+    body: JSON.stringify({
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
+    }),
   });
   const responseText = await res.text();
   const url = window.URL.createObjectURL(new Blob([responseText]));

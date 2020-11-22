@@ -6,14 +6,23 @@ export type SubmitFormState = {
   mut: string;
   spacer: string;
   pam: string;
-  PBSmin: string;
-  PBSmax: string;
-  rtMin: string;
-  rtMax: string;
+  minPbs: string;
+  maxPbs: string;
+  minRt: string;
+  maxRt: string;
   showAdvanced: boolean;
 };
 type Props = {
-  onSubmit: (wtSeq: string, mut: string, spacer: string) => Promise<void>;
+  onSubmit: (
+    wtSeq: string,
+    mut: string,
+    spacer: string,
+    pam: string,
+    minPbs: number,
+    maxPbs: number,
+    minRt: number,
+    maxRt: number,
+  ) => Promise<void>;
 };
 
 class SubmitForm extends Component<Props, SubmitFormState> {
@@ -22,10 +31,10 @@ class SubmitForm extends Component<Props, SubmitFormState> {
     mut: '',
     spacer: '',
     pam: 'NGG',
-    PBSmin: '8',
-    PBSmax: '18',
-    rtMin: '9',
-    rtMax: '16',
+    minPbs: '8',
+    maxPbs: '18',
+    minRt: '9',
+    maxRt: '16',
     showAdvanced: false,
   };
 
@@ -55,8 +64,26 @@ class SubmitForm extends Component<Props, SubmitFormState> {
   handleSubmit = async () => {
     // const { name, email } = this.state;
     // this.setState({ submittedName: name, submittedEmail: email });
-    const { wtSeq, mut, spacer } = this.state;
-    this.props.onSubmit(wtSeq, mut, spacer);
+    const {
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
+    } = this.state;
+    this.props.onSubmit(
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      parseInt(minPbs),
+      parseInt(maxPbs),
+      parseInt(minRt),
+      parseInt(maxRt),
+    );
   };
 
   handleAdvancedToggle = (e: any) => {
@@ -66,21 +93,21 @@ class SubmitForm extends Component<Props, SubmitFormState> {
 
   calcRtRange = (state: SubmitFormState) => {
     const mutLength = state.mut.length;
-    let rtMin = 9;
-    let rtMax = 16;
+    let minRt = 9;
+    let maxRt = 16;
     if (mutLength > 4) {
-      rtMin = mutLength + 6;
-      rtMax = mutLength + 16;
+      minRt = mutLength + 6;
+      maxRt = mutLength + 16;
     }
     if (mutLength > 8) {
-      rtMin = mutLength + 8;
-      rtMax = mutLength + 22;
+      minRt = mutLength + 8;
+      maxRt = mutLength + 22;
     }
     if (mutLength > 20) {
-      rtMin = mutLength + 10;
-      rtMax = mutLength + 30;
+      minRt = mutLength + 10;
+      maxRt = mutLength + 30;
     }
-    this.setState(() => ({ rtMin: rtMin.toString(), rtMax: rtMax.toString() }));
+    this.setState(() => ({ minRt: minRt.toString(), maxRt: maxRt.toString() }));
   };
 
   render() {
@@ -89,10 +116,10 @@ class SubmitForm extends Component<Props, SubmitFormState> {
       mut,
       spacer,
       pam,
-      rtMin,
-      rtMax,
-      PBSmin,
-      PBSmax,
+      minRt,
+      maxRt,
+      minPbs,
+      maxPbs,
       showAdvanced,
     } = this.state;
 
@@ -135,32 +162,32 @@ class SubmitForm extends Component<Props, SubmitFormState> {
               <Form.Input
                 label="Min PBS length"
                 placeholder="8"
-                name="PBSmin"
-                value={PBSmin}
+                name="minPbs"
+                value={minPbs}
                 onChange={this.handleChange}
                 required
               />
               <Form.Input
                 label="Max PBS length"
                 placeholder="18"
-                name="PBSmax"
-                value={PBSmax}
+                name="maxPbs"
+                value={maxPbs}
                 onChange={this.handleChange}
                 required
               />
               <Form.Input
                 label="Min RT length"
                 placeholder="8"
-                name="rtMin"
-                value={rtMin}
+                name="minRt"
+                value={minRt}
                 onChange={this.handleRTChange}
                 required
               />
               <Form.Input
                 label="Max RT length"
                 placeholder="18"
-                name="rtMax"
-                value={rtMax}
+                name="maxRt"
+                value={maxRt}
                 onChange={this.handleRTChange}
                 required
               />
