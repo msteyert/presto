@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import SequenceOptionsDropDown from '../../components/SequenceOptionsDropDown';
 import { useSequencePredictions } from '../../hooks';
 
 const PBSOptions = () => {
   const { pbsOptions, updateSelectedPbsOption } = useSequencePredictions();
   return (
-    <SequenceOptionsDropDown
-      title="Primer binding sites:"
-      options={pbsOptions.map((option) => option.pbs)}
-      onChange={updateSelectedPbsOption}
-    />
+    <Fragment>
+      {pbsOptions.length > 0 && (
+        <SequenceOptionsDropDown
+          title="Primer binding sites:"
+          options={pbsOptions.map((option) => option.pbs)}
+          onChange={updateSelectedPbsOption}
+        />
+      )}
+    </Fragment>
   );
 };
 

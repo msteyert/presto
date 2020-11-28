@@ -1,5 +1,7 @@
 import React from 'react';
 import { Tab, Grid } from 'semantic-ui-react';
+import PegRNAWarnings from './PegRNAWarnings';
+import Pe3Warnings from './Pe3Warnings';
 import RTTemplates from './RTTemplates';
 import PBSOptions from './PBSOptions';
 import PE3BOptions from './PE3BOptions';
@@ -14,6 +16,7 @@ const panes = [
     textAlign: 'left',
     render: () => (
       <Tab.Pane>
+        <PegRNAWarnings />
         <Grid>
           <Grid.Row>
             <Grid.Column width={8}>
@@ -37,6 +40,7 @@ const panes = [
     textAlign: 'left',
     render: () => (
       <Tab.Pane>
+        <Pe3Warnings />
         <Grid>
           <Grid.Row>
             <Grid.Column width={16}>
@@ -55,6 +59,7 @@ const panes = [
     textAlign: 'left',
     render: () => (
       <Tab.Pane>
+        <Pe3Warnings />
         <Grid>
           <Grid.Row>
             <Grid.Column width={16}>

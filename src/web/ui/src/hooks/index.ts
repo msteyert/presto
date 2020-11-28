@@ -6,6 +6,7 @@ import {
   generatePe3Options,
   generatePegRNA,
   generateSgRNA,
+  generateWarnings,
 } from '../api';
 import { GlobalState, PE3Option } from '../types/presto';
 import { createGlobalState } from 'react-hooks-global-state';
@@ -33,6 +34,11 @@ const initialState: GlobalState = {
   pegRNA: '',
   pe3sgRNA: { sense: '', antisense: '' },
   pe3bsgRNA: { sense: '', antisense: '' },
+  warnings: {
+    general: [],
+    pegRna: [],
+    pe3: [],
+  },
 };
 
 const { useGlobalState, getGlobalState } = createGlobalState(initialState);
@@ -70,6 +76,7 @@ export function useSequencePredictions() {
   const [selectedPe3bOption, setSelectedPe3bOption] = useGlobalState(
     'selectedPe3bOption',
   );
+  const [warnings, setWarnings] = useGlobalState('warnings');
 
   async function updateSequencePredictions(
     wtSeq: string,
@@ -83,6 +90,19 @@ export function useSequencePredictions() {
   ) {
     setTemplateOptions(
       await generateTemplateOptions(
+        wtSeq.toUpperCase(),
+        mut.toUpperCase(),
+        spacer.toUpperCase(),
+        pam.toUpperCase(),
+        minPbs,
+        maxPbs,
+        minRt,
+        maxRt,
+      ),
+    );
+
+    setWarnings(
+      await generateWarnings(
         wtSeq.toUpperCase(),
         mut.toUpperCase(),
         spacer.toUpperCase(),
@@ -209,6 +229,7 @@ export function useSequencePredictions() {
     pegRNA,
     pe3sgRNA,
     pe3bsgRNA,
+    warnings,
     setSpacer,
     selectedTemplateOption,
     updateSelectedTemplateOption,

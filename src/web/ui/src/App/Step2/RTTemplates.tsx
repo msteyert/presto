@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import SequenceOptionsDropDown from '../../components/SequenceOptionsDropDown';
 import { useSequencePredictions } from '../../hooks';
 
@@ -9,11 +9,15 @@ const RTTemplates = () => {
   } = useSequencePredictions();
 
   return (
-    <SequenceOptionsDropDown
-      title="RT templates:"
-      options={templateOptions.map((option) => option.rt)}
-      onChange={updateSelectedTemplateOption}
-    />
+    <Fragment>
+      {templateOptions.length > 0 && (
+        <SequenceOptionsDropDown
+          title="RT templates:"
+          options={templateOptions.map((option) => option.rt)}
+          onChange={updateSelectedTemplateOption}
+        />
+      )}
+    </Fragment>
   );
 };
 

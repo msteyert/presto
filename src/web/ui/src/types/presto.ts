@@ -55,4 +55,9 @@ export type GlobalState = {
     sense: string;
     antisense: string;
   };
+  warnings: {
+    general: string[];
+    pegRna: string[];
+    pe3: string[];
+  };
 };

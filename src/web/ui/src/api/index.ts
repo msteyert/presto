@@ -150,6 +150,32 @@ export const generateSgRNA = async (pe3: string) => {
   return await res.json();
 };
 
+export const generateWarnings = async (
+  wtSeq: string,
+  mut: string,
+  spacer: string,
+  pam: string,
+  minPbs: number,
+  maxPbs: number,
+  minRt: number,
+  maxRt: number,
+) => {
+  const res = await fetch(`${API_ROOT}/generate/warnings`, {
+    method: 'post',
+    body: JSON.stringify({
+      wtSeq,
+      mut,
+      spacer,
+      pam,
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
+    }),
+  });
+  return await res.json();
+};
+
 export const generateCSV = async (
   wtSeq: string,
   mut: string,

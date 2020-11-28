@@ -2,7 +2,6 @@ import os
 from io import StringIO
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from uuid import uuid4
@@ -25,12 +24,13 @@ from src.core.sequence_utils import (
     find_deletion,
     find_deletion_range,
     flip_strand_if_needed,
+    get_defaulted_inputs,
     is_top_strand,
     trim_sequence,
 )
 from src.core.csv import writeCsvFile
 from src.core.main import main
-from src.web.models import Pe3ResultInput, PegInput, PegResultInput
+from src.core.models import Pe3ResultInput, PegInput, PegResultInput
 
 from datetime import datetime
 
@@ -168,3 +168,23 @@ async def generate_csv(input: PegInput):
     )
 
     return response
+
+
+@app.post("/generate/warnings")
+async def generate_warnings(input: PegInput):
+    defaulted_input = get_defaulted_inputs(input)
+
+    values = main(defaulted_input)
+    warnings = values.get("warnings", {"general": [], "pegRna": [], "pe3": []})
+
+    return warnings
+
+
+@app.post("/generate/errors")
+async def generate_warnings(input: PegInput):
+    defaulted_input = get_defaulted_inputs(input)
+
+    values = main(defaulted_input)
+    warnings = values.get("errors", [])
+
+    return warnings
