@@ -6,6 +6,7 @@ import 'semantic-ui-css/semantic.min.css';
 import { useStep } from '../hooks';
 import Step1 from './Step1';
 import Step2 from './Step2';
+import Step3 from './Step3';
 import Steps from './AppSteps';
 
 function App() {
@@ -14,10 +15,11 @@ function App() {
   return (
     <div style={{ position: 'relative' }}>
       <AppMenu />
+      <Steps />
       <Grid centered>
-        <Steps />
         <Step1 />
-        {step === 1 && <Step2 />}
+        {step >= 1 && <Step2 />}
+        {step >= 2 && <Step3 />}
       </Grid>
     </div>
   );

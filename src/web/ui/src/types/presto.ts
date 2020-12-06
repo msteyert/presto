@@ -30,11 +30,14 @@ export type GlobalState = {
   wtSeq: string;
   mut: string;
   spacer: string;
+  customSpacer: string;
   pam: string;
   minPbs: number;
   maxPbs: number;
   minRt: number;
   maxRt: number;
+  spacerOptions: string[];
+  selectedSpacerOption: string | null;
   templateOptions: TemplateOption[];
   selectedTemplateOption: string | null;
   pbsOptions: PBSOption[];
@@ -60,4 +63,5 @@ export type GlobalState = {
     pegRna: string[];
     pe3: string[];
   };
+  step3Loading: boolean;
 };

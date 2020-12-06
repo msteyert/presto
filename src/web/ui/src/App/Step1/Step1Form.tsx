@@ -1,10 +1,10 @@
-import React, { Component, ChangeEvent } from 'react';
-import { Form, InputOnChangeData } from 'semantic-ui-react';
+import React, { Component, ChangeEvent, Fragment } from 'react';
+import { Divider, Form, InputOnChangeData } from 'semantic-ui-react';
 
 export type SubmitFormState = {
   wtSeq: string;
   mut: string;
-  spacer: string;
+  customSpacer: string;
   pam: string;
   minPbs: string;
   maxPbs: string;
@@ -16,7 +16,7 @@ type Props = {
   onSubmit: (
     wtSeq: string,
     mut: string,
-    spacer: string,
+    customSpacer: string,
     pam: string,
     minPbs: number,
     maxPbs: number,
@@ -29,7 +29,7 @@ class SubmitForm extends Component<Props, SubmitFormState> {
   state = {
     wtSeq: '',
     mut: '',
-    spacer: '',
+    customSpacer: '',
     pam: 'NGG',
     minPbs: '8',
     maxPbs: '18',
@@ -67,7 +67,7 @@ class SubmitForm extends Component<Props, SubmitFormState> {
     const {
       wtSeq,
       mut,
-      spacer,
+      customSpacer,
       pam,
       minPbs,
       maxPbs,
@@ -77,7 +77,7 @@ class SubmitForm extends Component<Props, SubmitFormState> {
     this.props.onSubmit(
       wtSeq,
       mut,
-      spacer,
+      customSpacer,
       pam,
       parseInt(minPbs),
       parseInt(maxPbs),
@@ -114,7 +114,7 @@ class SubmitForm extends Component<Props, SubmitFormState> {
     const {
       wtSeq,
       mut,
-      spacer,
+      customSpacer,
       pam,
       minRt,
       maxRt,
@@ -141,64 +141,67 @@ class SubmitForm extends Component<Props, SubmitFormState> {
             value={mut}
             onChange={this.handleChange}
           />
-          <Form.Input
-            label="PE spacer sequence"
-            placeholder=""
-            name="spacer"
-            value={spacer}
-            onChange={this.handleChange}
-            required
-          />
           {showAdvanced && (
-            <Form.Group>
+            <Fragment>
+              <h3>Advanced Options</h3>
+              <Divider />
               <Form.Input
-                label="PAM sequence (use IUPAC ambiguity as needed)"
-                placeholder="NGG"
-                name="pam"
-                value={pam}
+                label="Custom PE spacer sequence"
+                placeholder=""
+                name="customSpacer"
+                value={customSpacer}
                 onChange={this.handleChange}
-                required
               />
-              <Form.Input
-                label="Min PBS length"
-                placeholder="8"
-                name="minPbs"
-                value={minPbs}
-                onChange={this.handleChange}
-                required
-              />
-              <Form.Input
-                label="Max PBS length"
-                placeholder="18"
-                name="maxPbs"
-                value={maxPbs}
-                onChange={this.handleChange}
-                required
-              />
-              <Form.Input
-                label="Min RT length"
-                placeholder="8"
-                name="minRt"
-                value={minRt}
-                onChange={this.handleRTChange}
-                required
-              />
-              <Form.Input
-                label="Max RT length"
-                placeholder="18"
-                name="maxRt"
-                value={maxRt}
-                onChange={this.handleRTChange}
-                required
-              />
-            </Form.Group>
+              <Form.Group>
+                <Form.Input
+                  label="PAM sequence (use IUPAC ambiguity as needed)"
+                  placeholder="NGG"
+                  name="pam"
+                  value={pam}
+                  onChange={this.handleChange}
+                  required
+                />
+                <Form.Input
+                  label="Min PBS length"
+                  placeholder="8"
+                  name="minPbs"
+                  value={minPbs}
+                  onChange={this.handleChange}
+                  required
+                />
+                <Form.Input
+                  label="Max PBS length"
+                  placeholder="18"
+                  name="maxPbs"
+                  value={maxPbs}
+                  onChange={this.handleChange}
+                  required
+                />
+                <Form.Input
+                  label="Min RT length"
+                  placeholder="8"
+                  name="minRt"
+                  value={minRt}
+                  onChange={this.handleRTChange}
+                  required
+                />
+                <Form.Input
+                  label="Max RT length"
+                  placeholder="18"
+                  name="maxRt"
+                  value={maxRt}
+                  onChange={this.handleRTChange}
+                  required
+                />
+              </Form.Group>
+            </Fragment>
           )}
           <Form.Group>
+            <Form.Button content="Next" primary />
             <Form.Button
-              content="Show Advanced Options"
+              content={`${showAdvanced ? 'Hide' : 'Show'} Advanced Options`}
               onClick={this.handleAdvancedToggle}
             />
-            <Form.Button content="Submit" primary />
           </Form.Group>
         </Form>
       </div>

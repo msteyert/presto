@@ -1,23 +1,17 @@
-import React, { Fragment } from 'react';
-import { Grid } from 'semantic-ui-react';
-import OutputTabs from './OutputTabs';
-import FullResultsButton from './FullResultsButton';
+import React from 'react';
+import { Grid, Segment } from 'semantic-ui-react';
+import Submit from './Submit';
 
-const Step2 = () => {
-  return (
-    <Fragment>
-      <Grid.Row>
-        <Grid.Column width={14}>
-          <OutputTabs />
-        </Grid.Column>
-      </Grid.Row>
-      <Grid.Row>
-        <Grid.Column width={14}>
-          <FullResultsButton />
-        </Grid.Column>
-      </Grid.Row>
-    </Fragment>
-  );
-};
-
-export default Step2;
+const Step1 = () => (
+  <Grid.Row>
+    <Grid.Column width={14}>
+      <div id="step-2-container">
+        <Segment>
+          <h2>Spacer</h2>
+          <Submit />
+        </Segment>
+      </div>
+    </Grid.Column>
+  </Grid.Row>
+);
+export default Step1;

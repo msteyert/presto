@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Menu } from 'semantic-ui-react';
 
 const AppMenu = () => (
@@ -8,8 +8,9 @@ const AppMenu = () => (
     style={{
       position: 'sticky',
       top: 0,
-      backgroundColor: 'white',
-      zIndex: 1,
+      backgroundColor: '#f3f4f5',
+      zIndex: 2,
+      marginBottom: 0,
     }}
   >
     <Menu.Item name="Home" active></Menu.Item>

@@ -1,42 +1,64 @@
 import React from 'react';
 import {
-  useSequencePredictions,
-  useCleanWtSeq,
-  useCleanMutSeq,
   useStep,
+  useWtSeq,
+  useMut,
+  usePam,
+  useMinPbs,
+  useMaxPbs,
+  useMinRt,
+  useMaxRt,
+  useCustomSpacer,
+  useSequencePredictions,
+  useSpacerOptions,
 } from '../../hooks';
-import SubmitForm from '../../components/SubmitForm';
+import Step1Form from './Step1Form';
 
 const Submit = () => {
-  const { updateSequencePredictions } = useSequencePredictions();
-  const { getCleanWtSeq } = useCleanWtSeq();
-  const { getCleanMutSeq } = useCleanMutSeq();
+  const { setSpacer, setSelectedSpacerOption } = useSequencePredictions();
+  const { setWtSeq } = useWtSeq();
+  const { setMut } = useMut();
+  const { setCustomSpacer } = useCustomSpacer();
+  const { setPam } = usePam();
+  const { setMinPbs } = useMinPbs();
+  const { setMaxPbs } = useMaxPbs();
+  const { setMinRt } = useMinRt();
+  const { setMaxRt } = useMaxRt();
   const { setStep } = useStep();
+  const { setSpacerOptions } = useSpacerOptions();
 
   async function onSubmit(
     wtSeq: string,
     mut: string,
-    spacer: string,
+    customSpacer: string,
     pam: string,
     minPbs: number,
     maxPbs: number,
     minRt: number,
     maxRt: number,
   ) {
-    getCleanWtSeq(wtSeq, mut, spacer, pam, minPbs, maxPbs, minRt, maxRt);
-    getCleanMutSeq(wtSeq, mut, spacer, pam, minPbs, maxPbs, minRt, maxRt);
-    await updateSequencePredictions(
-      wtSeq,
-      mut,
-      spacer,
-      pam,
-      minPbs,
-      maxPbs,
-      minRt,
-      maxRt,
-    );
+    if (customSpacer !== '') {
+      setSpacer(customSpacer.toUpperCase());
+      setSelectedSpacerOption(customSpacer.toUpperCase());
+      setSpacerOptions([customSpacer]);
+    }
+    setWtSeq(wtSeq);
+    setMut(mut);
+    setCustomSpacer(customSpacer);
+    setPam(pam);
+    setMinPbs(minPbs);
+    setMaxPbs(maxPbs);
+    setMinRt(minRt);
+    setMaxRt(maxRt);
     setStep(1);
+
+    setTimeout(() => {
+      const nextStep = document.getElementById('step-2-container');
+      if (nextStep) {
+        nextStep.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 0);
   }
-  return <SubmitForm onSubmit={onSubmit} />;
+  return <Step1Form onSubmit={onSubmit} />;
 };
 export default Submit;
