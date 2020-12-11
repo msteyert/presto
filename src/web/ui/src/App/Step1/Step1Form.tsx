@@ -23,6 +23,7 @@ type Props = {
     minRt: number,
     maxRt: number,
   ) => Promise<void>;
+  loading: boolean;
 };
 
 class SubmitForm extends Component<Props, SubmitFormState> {
@@ -197,7 +198,7 @@ class SubmitForm extends Component<Props, SubmitFormState> {
             </Fragment>
           )}
           <Form.Group>
-            <Form.Button content="Next" primary />
+            <Form.Button content="Next" loading={this.props.loading} primary />
             <Form.Button
               content={`${showAdvanced ? 'Hide' : 'Show'} Advanced Options`}
               onClick={this.handleAdvancedToggle}

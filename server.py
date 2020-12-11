@@ -20,6 +20,7 @@ from src.core.sequence_utils import (
     createPBS,
     createPE3,
     createRT,
+    create_spacers,
     find_cas9_cut,
     find_deletion,
     find_deletion_range,
@@ -118,6 +119,12 @@ async def generate_pegrna(input: PegResultInput):
 @app.post("/generate/sgrna")
 async def generate_pegrna(input: Pe3ResultInput):
     return build_pe3_sgRNA(input.pe3)
+
+
+@app.post("/generate/spacers")
+async def generate_spacers(input: PegInput):
+    mutSeq = create_mutSeq(input.wtSeq, input.mut)
+    return create_spacers(input.wtSeq, mutSeq, input.pam)
 
 
 @app.post("/generate/csv")

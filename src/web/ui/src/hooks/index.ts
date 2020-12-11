@@ -42,6 +42,7 @@ const initialState: GlobalState = {
     pegRna: [],
     pe3: [],
   },
+  step2Loading: false,
   step3Loading: false,
 };
 
@@ -425,6 +426,13 @@ export function useStep() {
   };
 }
 
+export function useStep2Loading() {
+  const [step2Loading, setStep2Loading] = useGlobalState('step2Loading');
+  return {
+    step2Loading,
+    setStep2Loading,
+  };
+}
 export function useStep3Loading() {
   const [step3Loading, setStep3Loading] = useGlobalState('step3Loading');
   return {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { generateSpacers } from '../../api';
 import {
   useStep,
   useWtSeq,
@@ -11,6 +12,7 @@ import {
   useCustomSpacer,
   useSequencePredictions,
   useSpacerOptions,
+  useStep2Loading,
 } from '../../hooks';
 import Step1Form from './Step1Form';
 
@@ -25,7 +27,8 @@ const Submit = () => {
   const { setMinRt } = useMinRt();
   const { setMaxRt } = useMaxRt();
   const { setStep } = useStep();
-  const { setSpacerOptions } = useSpacerOptions();
+  const { spacerOptions, setSpacerOptions } = useSpacerOptions();
+  const { setStep2Loading, step2Loading } = useStep2Loading();
 
   async function onSubmit(
     wtSeq: string,
@@ -37,14 +40,27 @@ const Submit = () => {
     minRt: number,
     maxRt: number,
   ) {
+    setStep2Loading(true);
     if (customSpacer !== '') {
       setSpacer(customSpacer.toUpperCase());
-      setSelectedSpacerOption(customSpacer.toUpperCase());
-      setSpacerOptions([customSpacer]);
+      const customSpacerOption = {
+        spacer: customSpacer.toUpperCase(),
+        cutToMut: null,
+        quality: null,
+      };
+      setSelectedSpacerOption(customSpacerOption);
+      setSpacerOptions([customSpacerOption]);
     }
+
+    const apiSpacerOptions = await generateSpacers(wtSeq, mut, pam);
+    const finalSpacerOptions = [...spacerOptions, ...apiSpacerOptions];
+    setSpacerOptions(finalSpacerOptions);
+    setSelectedSpacerOption(finalSpacerOptions[0]);
+
     setWtSeq(wtSeq);
     setMut(mut);
     setCustomSpacer(customSpacer);
+    setSpacer(finalSpacerOptions[0].spacer);
     setPam(pam);
     setMinPbs(minPbs);
     setMaxPbs(maxPbs);
@@ -57,8 +73,9 @@ const Submit = () => {
       if (nextStep) {
         nextStep.scrollIntoView({ behavior: 'smooth' });
       }
+      setStep2Loading(false);
     }, 0);
   }
-  return <Step1Form onSubmit={onSubmit} />;
+  return <Step1Form onSubmit={onSubmit} loading={step2Loading} />;
 };
 export default Submit;

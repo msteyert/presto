@@ -26,6 +26,12 @@ export type PE3Option = {
   type: string;
 };
 
+export type SpacerOption = {
+  spacer: string;
+  cutToMut: number | null;
+  quality: number | null;
+};
+
 export type GlobalState = {
   wtSeq: string;
   mut: string;
@@ -36,8 +42,8 @@ export type GlobalState = {
   maxPbs: number;
   minRt: number;
   maxRt: number;
-  spacerOptions: string[];
-  selectedSpacerOption: string | null;
+  spacerOptions: SpacerOption[];
+  selectedSpacerOption: SpacerOption | null;
   templateOptions: TemplateOption[];
   selectedTemplateOption: string | null;
   pbsOptions: PBSOption[];
@@ -63,5 +69,6 @@ export type GlobalState = {
     pegRna: string[];
     pe3: string[];
   };
+  step2Loading: boolean;
   step3Loading: boolean;
 };

@@ -1,4 +1,5 @@
 import { API_ROOT } from '../config';
+import { SpacerOption } from '../types/presto';
 
 export const generateTemplateOptions = async (
   wtSeq: string,
@@ -148,6 +149,24 @@ export const generateSgRNA = async (pe3: string) => {
     body: JSON.stringify({ pe3 }),
   });
   return await res.json();
+};
+
+export const generateSpacers = async (
+  wtSeq: string,
+  mut: string,
+  pam: string,
+) => {
+  const res = await fetch(`${API_ROOT}/generate/spacers`, {
+    method: 'post',
+    body: JSON.stringify({
+      wtSeq,
+      mut,
+      spacer: '',
+      pam,
+    }),
+  });
+  const spacerOptions: SpacerOption[] = await res.json();
+  return spacerOptions;
 };
 
 export const generateWarnings = async (
