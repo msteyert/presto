@@ -27,16 +27,13 @@ const initialState: GlobalState = {
   selectedSpacerOption: null,
   pbsOptions: [],
   selectedPbsOption: null,
-  pe3bOptions: [],
   pe3Options: [],
   selectedPe3Option: null,
-  selectedPe3bOption: null,
   cleanWtSeq: '',
   cleanMutSeq: '',
   step: 0,
   pegRNA: '',
   pe3sgRNA: { sense: '', antisense: '' },
-  pe3bsgRNA: { sense: '', antisense: '' },
   warnings: {
     general: [],
     pegRna: [],
@@ -64,11 +61,9 @@ export function useSequencePredictions() {
   const [maxRt, setMaxRt] = useGlobalState('maxRt');
 
   const [pbsOptions, setPBSOptions] = useGlobalState('pbsOptions');
-  const [pe3bOptions, setPe3bOptions] = useGlobalState('pe3bOptions');
   const [pe3Options, setPe3Options] = useGlobalState('pe3Options');
   const [pegRNA, setPegRNA] = useGlobalState('pegRNA');
   const [pe3sgRNA, setPe3sgRNA] = useGlobalState('pe3sgRNA');
-  const [pe3bsgRNA, setPe3bsgRNA] = useGlobalState('pe3bsgRNA');
   const [selectedSpacerOption, setSelectedSpacerOption] = useGlobalState(
     'selectedSpacerOption',
   );
@@ -80,9 +75,6 @@ export function useSequencePredictions() {
   );
   const [selectedPe3Option, setSelectedPe3Option] = useGlobalState(
     'selectedPe3Option',
-  );
-  const [selectedPe3bOption, setSelectedPe3bOption] = useGlobalState(
-    'selectedPe3bOption',
   );
   const [warnings, setWarnings] = useGlobalState('warnings');
 
@@ -160,13 +152,9 @@ export function useSequencePredictions() {
       minRt,
       maxRt,
     );
-    setPe3bOptions(pe3Options.filter((option) => option.type === 'pe3b'));
-    if (getGlobalState('pe3bOptions').length > 0) {
-      setSelectedPe3bOption(getGlobalState('pe3bOptions')[0].secondGuide);
-    }
-    setPe3Options(pe3Options.filter((option) => option.type === 'pe3'));
+    setPe3Options(pe3Options);
     if (getGlobalState('pe3Options').length > 0) {
-      setSelectedPe3Option(getGlobalState('pe3Options')[0].secondGuide);
+      setSelectedPe3Option(getGlobalState('pe3Options')[0]);
     }
 
     updatePegRNA();
@@ -199,25 +187,18 @@ export function useSequencePredictions() {
     updatePegRNA();
   }
 
-  function updateSelectedPe3Option(option: string) {
+  function updateSelectedPe3Option(option: PE3Option) {
     setSelectedPe3Option(option);
-    updateSgRNA();
-  }
-  function updateSelectedPe3bOption(option: string) {
-    setSelectedPe3bOption(option);
     updateSgRNA();
   }
 
   async function updateSgRNA() {
     const globalSelectedPe3Option = getGlobalState('selectedPe3Option');
-    const globalSelectedPe3bOption = getGlobalState('selectedPe3bOption');
     if (globalSelectedPe3Option) {
-      const sgRNA = await generateSgRNA(globalSelectedPe3Option.toUpperCase());
+      const sgRNA = await generateSgRNA(
+        globalSelectedPe3Option.secondGuide.toUpperCase(),
+      );
       setPe3sgRNA(sgRNA);
-    }
-    if (globalSelectedPe3bOption) {
-      const sgRNA = await generateSgRNA(globalSelectedPe3bOption.toUpperCase());
-      setPe3bsgRNA(sgRNA);
     }
   }
 
@@ -232,18 +213,15 @@ export function useSequencePredictions() {
     maxRt,
     templateOptions,
     pbsOptions,
-    pe3bOptions,
     pe3Options,
     pegRNA,
     pe3sgRNA,
-    pe3bsgRNA,
     warnings,
     setSpacer,
     selectedTemplateOption,
     updateSelectedTemplateOption,
     updateSelectedPbsOption,
     updateSelectedPe3Option,
-    updateSelectedPe3bOption,
     updateSequencePredictions,
     updatePegRNA,
     updateSgRNA,
@@ -407,14 +385,6 @@ export function usePe3sgRNA() {
   return {
     pe3sgRNA,
     setPe3SgRNA,
-  };
-}
-export function usePe3bsgRNA() {
-  const [pe3bsgRNA, setPe3bSgRNA] = useGlobalState('pe3bsgRNA');
-
-  return {
-    pe3bsgRNA,
-    setPe3bSgRNA,
   };
 }
 

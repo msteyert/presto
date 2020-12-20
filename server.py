@@ -48,6 +48,7 @@ app.add_middleware(
 )
 
 app.mount("/static", StaticFiles(directory="src/web/ui/build/static"), name="static")
+app.mount("/images", StaticFiles(directory="images"), name="images")
 templates = Jinja2Templates(directory="src/web/ui/build")
 
 
