@@ -17,7 +17,7 @@
     "react-scripts": "3.4.3",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^1.2.1",
-    "seqviz": "^3.0.23",
+    "seqviz": "github:coreyflynn/seqviz#develop",
     "typescript": "~3.7.2"
   },
   "scripts": {

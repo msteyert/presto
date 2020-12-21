@@ -13,7 +13,9 @@ import {
   useSequencePredictions,
   useSpacerOptions,
   useStep2Loading,
+  useSpacerError,
 } from '../../hooks';
+import { SpacerOption } from '../../types/presto';
 import Step1Form from './Step1Form';
 
 const Submit = () => {
@@ -29,6 +31,7 @@ const Submit = () => {
   const { setStep } = useStep();
   const { spacerOptions, setSpacerOptions } = useSpacerOptions();
   const { setStep2Loading, step2Loading } = useStep2Loading();
+  const { setSpacerError } = useSpacerError();
 
   async function onSubmit(
     wtSeq: string,
@@ -41,6 +44,8 @@ const Submit = () => {
     maxRt: number,
   ) {
     setStep2Loading(true);
+    let finalSpacerOptions: SpacerOption[] = [];
+
     if (customSpacer !== '') {
       setSpacer(customSpacer.toUpperCase());
       const customSpacerOption = {
@@ -48,12 +53,26 @@ const Submit = () => {
         cutToMut: null,
         quality: null,
       };
+      finalSpacerOptions = [customSpacerOption];
       setSelectedSpacerOption(customSpacerOption);
       setSpacerOptions([customSpacerOption]);
     }
 
     const apiSpacerOptions = await generateSpacers(wtSeq, mut, pam);
-    const finalSpacerOptions = [...spacerOptions, ...apiSpacerOptions];
+    finalSpacerOptions = [
+      ...finalSpacerOptions,
+      ...spacerOptions,
+      ...apiSpacerOptions,
+    ];
+
+    if (finalSpacerOptions.length === 0) {
+      setSpacerError(true);
+      setStep2Loading(false);
+      return;
+    }
+
+    setSpacerError(false);
+
     setSpacerOptions(finalSpacerOptions);
     setSelectedSpacerOption(finalSpacerOptions[0]);
 

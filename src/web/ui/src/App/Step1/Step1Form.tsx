@@ -1,5 +1,6 @@
 import React, { Component, ChangeEvent, Fragment } from 'react';
 import { Divider, Form, InputOnChangeData } from 'semantic-ui-react';
+import SpacerError from './SpacerError';
 
 export type SubmitFormState = {
   wtSeq: string;
@@ -126,6 +127,7 @@ class SubmitForm extends Component<Props, SubmitFormState> {
 
     return (
       <div>
+        <SpacerError />
         <Form onSubmit={this.handleSubmit}>
           <Form.Input
             label="Wildtype sequence (parentheses around region to be mutated)"

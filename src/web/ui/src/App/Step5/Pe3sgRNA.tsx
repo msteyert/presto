@@ -14,7 +14,7 @@ const Pe3sgRNA = () => {
           <div style={{ flexGrow: 1 }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div>
-                sense sgRNA:
+                sense PE3 guide:
                 <Copy value={pe3sgRNA.sense} />
               </div>
               <p style={{ wordBreak: 'break-word' }}>{pe3sgRNA.sense}</p>
@@ -23,7 +23,7 @@ const Pe3sgRNA = () => {
           <div style={{ flexGrow: 1 }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div>
-                antisense sgRNA:
+                antisense PE3 guide:
                 <Copy value={pe3sgRNA.antisense} />
               </div>
               <p style={{ wordBreak: 'break-word' }}>{pe3sgRNA.antisense}</p>

@@ -32,15 +32,18 @@ const initialState: GlobalState = {
   cleanWtSeq: '',
   cleanMutSeq: '',
   step: 0,
-  pegRNA: '',
+  pegRNA: null,
   pe3sgRNA: { sense: '', antisense: '' },
   warnings: {
     general: [],
     pegRna: [],
     pe3: [],
   },
+  spacerError: false,
   step2Loading: false,
   step3Loading: false,
+  step4Loading: false,
+  step5Loading: false,
 };
 
 const { useGlobalState, getGlobalState } = createGlobalState(initialState);
@@ -168,12 +171,12 @@ export function useSequencePredictions() {
     );
     const globalSelectedPbsOption = getGlobalState('selectedPbsOption');
     if (globalSelectedTemplateOption && globalSelectedPbsOption) {
-      const { sequence } = await generatePegRNA(
+      const pegRNA = await generatePegRNA(
         globalSpacer.toUpperCase(),
         globalSelectedTemplateOption.toUpperCase(),
         globalSelectedPbsOption.toUpperCase(),
       );
-      setPegRNA(sequence);
+      setPegRNA(pegRNA);
     }
   }
 
@@ -388,6 +391,14 @@ export function usePe3sgRNA() {
   };
 }
 
+export function useSpacerError() {
+  const [spacerError, setSpacerError] = useGlobalState('spacerError');
+  return {
+    spacerError,
+    setSpacerError,
+  };
+}
+
 export function useStep() {
   const [step, setStep] = useGlobalState('step');
   return {
@@ -403,10 +414,26 @@ export function useStep2Loading() {
     setStep2Loading,
   };
 }
+
 export function useStep3Loading() {
   const [step3Loading, setStep3Loading] = useGlobalState('step3Loading');
   return {
     step3Loading,
     setStep3Loading,
+  };
+}
+export function useStep4Loading() {
+  const [step4Loading, setStep4Loading] = useGlobalState('step4Loading');
+  return {
+    step4Loading,
+    setStep4Loading,
+  };
+}
+
+export function useStep5Loading() {
+  const [step5Loading, setStep5Loading] = useGlobalState('step5Loading');
+  return {
+    step5Loading,
+    setStep5Loading,
   };
 }

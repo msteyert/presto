@@ -11,6 +11,7 @@ from starlette.responses import StreamingResponse
 from src.core.sequence_utils import (
     DEFAULT_PAM,
     DEFAULT_PBS_RANGE,
+    build_final_pegRNA,
     build_pe3_sgRNA,
     build_untrimmed_pegRNA,
     calcRtRange,
@@ -93,7 +94,6 @@ async def generate_pe3(input: PegInput):
     mutSeq = create_mutSeq(input.wtSeq, input.mut)
     wtFinal = create_final_wtSeq(input.wtSeq)
     cut = find_cas9_cut(wtFinal, input.spacer)
-    print(createPE3(wtFinal, mutSeq, DEFAULT_PAM, cut))
     return [
         x
         for x in createPE3(wtFinal, mutSeq, DEFAULT_PAM, cut)
@@ -113,8 +113,7 @@ async def generate_wt_seq(input: PegInput):
 
 @app.post("/generate/pegrna")
 async def generate_pegrna(input: PegResultInput):
-    untrimmed = build_untrimmed_pegRNA(input.spacer, input.rtt, input.pbs)
-    return {"sequence": trim_sequence(untrimmed)}
+    return build_final_pegRNA(input.spacer, input.rtt, input.pbs)
 
 
 @app.post("/generate/sgrna")

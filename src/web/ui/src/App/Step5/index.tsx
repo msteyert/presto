@@ -5,7 +5,7 @@ import FullResultsButton from './FullResultsButton';
 import PegRNA from './PegRNA';
 import Pe3sgRNA from './Pe3sgRNA';
 
-const Step2 = () => {
+const Step5 = () => {
   const { step } = useStep();
   return (
     <Grid.Row>
@@ -24,4 +24,4 @@ const Step2 = () => {
     </Grid.Row>
   );
 };
-export default Step2;
+export default Step5;

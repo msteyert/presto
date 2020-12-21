@@ -32,6 +32,20 @@ export type SpacerOption = {
   quality: number | null;
 };
 
+export type FinalPegRNAAnnotation = {
+  start: number;
+  end: number;
+  color: string;
+  name: string;
+  direction: number;
+  sequence: string;
+};
+
+export type FinalPegRNA = {
+  sequence: string;
+  annotations: FinalPegRNAAnnotation[];
+};
+
 export type GlobalState = {
   wtSeq: string;
   mut: string;
@@ -53,7 +67,7 @@ export type GlobalState = {
   cleanWtSeq: string;
   cleanMutSeq: string;
   step: number;
-  pegRNA: string;
+  pegRNA: FinalPegRNA | null;
   pe3sgRNA: {
     sense: string;
     antisense: string;
@@ -63,6 +77,9 @@ export type GlobalState = {
     pegRna: string[];
     pe3: string[];
   };
+  spacerError: boolean;
   step2Loading: boolean;
   step3Loading: boolean;
+  step4Loading: boolean;
+  step5Loading: boolean;
 };
