@@ -1,5 +1,6 @@
 import React from 'react';
 import AppMenu from './AppMenu';
+import SideMenu from './SideMenu';
 import { Grid } from 'semantic-ui-react';
 import './App.css';
 import 'semantic-ui-css/semantic.min.css';
@@ -15,16 +16,37 @@ function App() {
   const { step } = useStep();
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
       <AppMenu />
-      <Steps />
-      <Grid centered>
-        <Step1 />
-        {step >= 1 && <Step2 />}
-        {step >= 2 && <Step3 />}
-        {step >= 3 && <Step4 />}
-        {step >= 4 && <Step5 />}
-      </Grid>
+
+      {/* <Steps /> */}
+      <SideMenu />
+      <div
+        style={{
+          width: 'calc(100vw - 100px)',
+          position: 'absolute',
+          top: 40,
+          left: 100,
+          height: 'calc(100vh - 40px)',
+          overflowX: 'hidden',
+          overflowY: 'auto',
+        }}
+      >
+        <Grid centered>
+          <Step1 />
+          {step >= 1 && <Step2 />}
+          {step >= 2 && <Step3 />}
+          {step >= 3 && <Step4 />}
+          {step >= 4 && <Step5 />}
+        </Grid>
+      </div>
     </div>
   );
 }

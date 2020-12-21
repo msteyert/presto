@@ -1,7 +1,6 @@
 import React, { Fragment } from 'react';
 import Copy from '../../components/Copy';
 import { usePegRNA } from '../../hooks';
-import { SeqViz } from 'seqviz';
 import { FinalPegRNAAnnotation } from '../../types/presto';
 
 function uniqBy(

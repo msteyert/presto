@@ -1,13 +1,16 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { Menu } from 'semantic-ui-react';
+import { API_ROOT } from '../../config';
 
 const AppMenu = () => (
   <Menu
     secondary
     pointing
     style={{
-      position: 'sticky',
+      position: 'absolute',
       top: 0,
+      left: 0,
+      width: '100vw',
       backgroundColor: '#f3f4f5',
       zIndex: 2,
       marginBottom: 0,

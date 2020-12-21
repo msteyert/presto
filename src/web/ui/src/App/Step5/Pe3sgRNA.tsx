@@ -1,5 +1,4 @@
 import React, { Fragment } from 'react';
-import { Grid } from 'semantic-ui-react';
 import Copy from '../../components/Copy';
 import { usePe3sgRNA, useSequencePredictions } from '../../hooks';
 
