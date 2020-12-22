@@ -8,7 +8,7 @@ import {
   generateSgRNA,
   generateWarnings,
 } from '../api';
-import { GlobalState, PE3Option } from '../types/presto';
+import { GlobalState, PBSOption, PE3Option, TemplateOption } from '../types/presto';
 import { createGlobalState } from 'react-hooks-global-state';
 
 const initialState: GlobalState = {
@@ -44,7 +44,8 @@ const initialState: GlobalState = {
   step3Loading: false,
   step4Loading: false,
   step5Loading: false,
-  cloningStrategy: "Richardson"
+  cloningStrategy: "Richardson",
+  step3Advanced: false
 };
 
 const { useGlobalState, getGlobalState } = createGlobalState(initialState);
@@ -129,7 +130,7 @@ export function useSequencePredictions() {
     setMaxRt(maxRt);
 
     if (getGlobalState('templateOptions').length > 0) {
-      setSelectedTemplateOption(getGlobalState('templateOptions')[0].rt);
+      setSelectedTemplateOption(getGlobalState('templateOptions')[0]);
     }
     setPBSOptions(
       await generatePrimerBindingSiteOptions(
@@ -144,7 +145,7 @@ export function useSequencePredictions() {
       ),
     );
     if (getGlobalState('pbsOptions').length > 0) {
-      setSelectedPbsOption(getGlobalState('pbsOptions')[0].pbs);
+      setSelectedPbsOption(getGlobalState('pbsOptions')[0]);
     }
     const pe3Options: PE3Option[] = await generatePe3Options(
       wtSeq.toUpperCase(),
@@ -174,19 +175,19 @@ export function useSequencePredictions() {
     if (globalSelectedTemplateOption && globalSelectedPbsOption) {
       const pegRNA = await generatePegRNA(
         globalSpacer.toUpperCase(),
-        globalSelectedTemplateOption.toUpperCase(),
-        globalSelectedPbsOption.toUpperCase(),
+        globalSelectedTemplateOption.rt.toUpperCase(),
+        globalSelectedPbsOption.pbs.toUpperCase(),
       );
       setPegRNA(pegRNA);
     }
   }
 
-  function updateSelectedTemplateOption(option: string) {
+  function updateSelectedTemplateOption(option: TemplateOption) {
     setSelectedTemplateOption(option);
     updatePegRNA();
   }
 
-  function updateSelectedPbsOption(option: string) {
+  function updateSelectedPbsOption(option: PBSOption) {
     setSelectedPbsOption(option);
     updatePegRNA();
   }
@@ -217,6 +218,7 @@ export function useSequencePredictions() {
     maxRt,
     templateOptions,
     pbsOptions,
+    selectedPbsOption,
     pe3Options,
     pegRNA,
     pe3sgRNA,
@@ -444,5 +446,13 @@ export function useCloningStrategy() {
   return {
     cloningStrategy,
     setCloningStrategy,
+  };
+}
+
+export function useStep3Advanced() {
+  const [step3Advanced, setStep3Advanced] = useGlobalState('step3Advanced');
+  return {
+    step3Advanced,
+    setStep3Advanced,
   };
 }

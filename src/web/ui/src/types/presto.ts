@@ -1,20 +1,24 @@
 export type TemplateOption = {
-  flapLength: number;
-  rt: string;
+  error: string;
+  fhr: string;
+  fhrGC: number;
+  fhrLength: number;
   isDefault: boolean;
-  flapGC: number;
+  rt: string;
+  rtLength: number;
+  rtPolyT: boolean;
   rtTM: number;
   startsWithC: boolean;
-  rtPolyT: boolean;
 };
 
 export type PBSOption = {
+  error: string;
+  isDefault: boolean;
   length: number;
   pbs: string;
-  isDefault: boolean;
   pbsGC: number;
-  pbsTM: number;
   pbsPolyT: boolean;
+  pbsTM: number;
 };
 
 export type PE3Option = {
@@ -59,9 +63,9 @@ export type GlobalState = {
   spacerOptions: SpacerOption[];
   selectedSpacerOption: SpacerOption | null;
   templateOptions: TemplateOption[];
-  selectedTemplateOption: string | null;
+  selectedTemplateOption: TemplateOption | null;
   pbsOptions: PBSOption[];
-  selectedPbsOption: string | null;
+  selectedPbsOption: PBSOption | null;
   pe3Options: PE3Option[];
   selectedPe3Option: PE3Option | null;
   cleanWtSeq: string;
@@ -83,4 +87,5 @@ export type GlobalState = {
   step4Loading: boolean;
   step5Loading: boolean;
   cloningStrategy: string;
+  step3Advanced: boolean
 };

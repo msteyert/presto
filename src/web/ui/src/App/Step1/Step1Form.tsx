@@ -157,19 +157,12 @@ class SubmitForm extends Component<Props, SubmitFormState> {
               />
               <Form.Group>
                 <Form.Input
-                  label="PAM sequence (use IUPAC ambiguity as needed)"
-                  placeholder="NGG"
-                  name="pam"
-                  value={pam}
-                  onChange={this.handleChange}
-                  required
-                />
-                <Form.Input
                   label="Min PBS length"
                   placeholder="8"
                   name="minPbs"
                   value={minPbs}
                   onChange={this.handleChange}
+                  width="4"
                   required
                 />
                 <Form.Input
@@ -178,6 +171,7 @@ class SubmitForm extends Component<Props, SubmitFormState> {
                   name="maxPbs"
                   value={maxPbs}
                   onChange={this.handleChange}
+                  width="4"
                   required
                 />
                 <Form.Input
@@ -186,6 +180,7 @@ class SubmitForm extends Component<Props, SubmitFormState> {
                   name="minRt"
                   value={minRt}
                   onChange={this.handleRTChange}
+                  width="4"
                   required
                 />
                 <Form.Input
@@ -194,9 +189,19 @@ class SubmitForm extends Component<Props, SubmitFormState> {
                   name="maxRt"
                   value={maxRt}
                   onChange={this.handleRTChange}
+                  width="4"
                   required
                 />
               </Form.Group>
+              <Form.Input
+                label="PAM sequence (use IUPAC ambiguity as needed)"
+                placeholder="NGG"
+                name="pam"
+                value={pam}
+                onChange={this.handleChange}
+                width="6"
+                required
+              />
             </Fragment>
           )}
           <Form.Group>
