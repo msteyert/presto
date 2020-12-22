@@ -1,7 +1,8 @@
 import React, { Fragment } from 'react';
 import Copy from '../../components/Copy';
-import { usePegRNA } from '../../hooks';
+import { useCloningStrategy, usePegRNA } from '../../hooks';
 import { FinalPegRNAAnnotation } from '../../types/presto';
+import CloningStrategyDropdown from './CloningStrategyDropdown';
 
 function uniqBy(
   a: Array<FinalPegRNAAnnotation>,
@@ -14,21 +15,46 @@ function uniqBy(
   });
 }
 
+const getSequence = (annotations: FinalPegRNAAnnotation[]) =>
+  annotations.map((a) => a.sequence).join('');
+
+const getCloningStrategyAnnotations = (
+  annotations: FinalPegRNAAnnotation[],
+  cloningStrategy: string,
+) =>
+  annotations.filter((a) =>
+    cloningStrategy === 'None'
+      ? ['rtt', 'pbs', 'spacer'].includes(a.name)
+      : true,
+  );
+
 const PegRNA = () => {
   const { pegRNA } = usePegRNA();
+  const { cloningStrategy } = useCloningStrategy();
   const annotations = uniqBy(
-    pegRNA?.annotations || ([] as FinalPegRNAAnnotation[]),
+    getCloningStrategyAnnotations(
+      pegRNA?.annotations || ([] as FinalPegRNAAnnotation[]),
+      cloningStrategy,
+    ),
     (a: FinalPegRNAAnnotation) => a.name,
   );
 
   return (
     <Fragment>
+      <CloningStrategyDropdown />
       {pegRNA && (
-        <div>
+        <div style={{ marginTop: 30 }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
               Final pegRNA:
-              <Copy value={pegRNA.sequence} />
+              <Copy
+                value={getSequence(
+                  getCloningStrategyAnnotations(
+                    pegRNA.annotations,
+                    cloningStrategy,
+                  ),
+                )}
+              />
               <div style={{ display: 'flex', position: 'absolute', right: 12 }}>
                 {annotations.map((annotation) => (
                   <div style={{ display: 'flex' }}>
@@ -48,7 +74,10 @@ const PegRNA = () => {
               </div>
             </div>
             <p style={{ wordBreak: 'break-word', marginTop: 10 }}>
-              {pegRNA.annotations.map((annotation) => (
+              {getCloningStrategyAnnotations(
+                pegRNA.annotations,
+                cloningStrategy,
+              ).map((annotation) => (
                 <span
                   style={{
                     backgroundColor: annotation.color,

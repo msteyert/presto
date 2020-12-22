@@ -1,6 +1,5 @@
 import React from 'react';
 import { Menu } from 'semantic-ui-react';
-import { API_ROOT } from '../../config';
 
 const AppMenu = () => (
   <Menu

@@ -30,10 +30,10 @@ function App() {
       <SideMenu />
       <div
         style={{
-          width: 'calc(100vw - 100px)',
+          width: 'calc(100vw - 250px)',
           position: 'absolute',
           top: 40,
-          left: 100,
+          left: 250,
           height: 'calc(100vh - 40px)',
           overflowX: 'hidden',
           overflowY: 'auto',

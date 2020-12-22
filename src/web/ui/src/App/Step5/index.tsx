@@ -10,7 +10,7 @@ const Step5 = () => {
   return (
     <Grid.Row>
       <Grid.Column width={14}>
-        <div id="step-5-container">
+        <div id="step-5-container" style={{ marginBottom: 40 }}>
           <Segment color={step === 4 ? 'grey' : undefined}>
             <h2>Cloning</h2>
             <PegRNA />

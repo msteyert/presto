@@ -82,4 +82,5 @@ export type GlobalState = {
   step3Loading: boolean;
   step4Loading: boolean;
   step5Loading: boolean;
+  cloningStrategy: string;
 };

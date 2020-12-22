@@ -7,7 +7,7 @@ const Pe3sgRNA = () => {
   const { pe3sgRNA } = usePe3sgRNA();
 
   return (
-    <div style={{ display: 'flex' }}>
+    <div>
       {pe3Options.length > 0 && (
         <Fragment>
           <div style={{ flexGrow: 1 }}>
@@ -19,6 +19,7 @@ const Pe3sgRNA = () => {
               <p style={{ wordBreak: 'break-word' }}>{pe3sgRNA.sense}</p>
             </div>
           </div>
+          <div style={{ height: 15 }} />
           <div style={{ flexGrow: 1 }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div>

@@ -44,6 +44,7 @@ const initialState: GlobalState = {
   step3Loading: false,
   step4Loading: false,
   step5Loading: false,
+  cloningStrategy: "Richardson"
 };
 
 const { useGlobalState, getGlobalState } = createGlobalState(initialState);
@@ -435,5 +436,13 @@ export function useStep5Loading() {
   return {
     step5Loading,
     setStep5Loading,
+  };
+}
+
+export function useCloningStrategy() {
+  const [cloningStrategy, setCloningStrategy] = useGlobalState('cloningStrategy');
+  return {
+    cloningStrategy,
+    setCloningStrategy,
   };
 }

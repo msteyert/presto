@@ -1,6 +1,8 @@
 import React, { SetStateAction } from 'react';
 import { useStep } from '../../hooks';
-import { Icon } from 'semantic-ui-react';
+import { Grid, Icon } from 'semantic-ui-react';
+import AppSteps from '../AppSteps';
+import StepsProgress from '../../components/StepsProgress';
 
 const onClickFactory = (
   step: number,
@@ -42,22 +44,22 @@ const steps = [
 ];
 
 const SideMenu = () => {
-  const { step, setStep } = useStep();
+  const { step } = useStep();
   return (
     <div
       style={{
         position: 'absolute',
-        paddingTop: 16,
+        paddingTop: 40,
         top: 40,
-        left: 0,
-        width: 100,
+        left: -10,
+        width: 250,
         height: 'calc(100vh - 40px)',
-        backgroundColor: '#f3f4f5',
+        // backgroundColor: '#f3f4f5',
         zIndex: 2,
-        borderRight: '2px solid rgba(34,36,38,.15)',
+        // borderRight: '2px solid rgba(34,36,38,.15)',
       }}
     >
-      {steps.map((menuStep) => (
+      {/* {steps.map((menuStep) => (
         <div
           style={{
             paddingLeft: 16,
@@ -74,15 +76,11 @@ const SideMenu = () => {
               <Icon name="check circle" color="green" />
             )}
           </div>
-          {/* {step > menuStep.number - 1 && (
-            <i
-              style={{ position: 'relative', left: 14 }}
-              className="arrow down"
-            />
-          )} */}
-          {/* <p>{menuStep.description}</p> */}
         </div>
-      ))}
+      ))} */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <StepsProgress step={step} vertical />
+      </div>
     </div>
   );
 };
