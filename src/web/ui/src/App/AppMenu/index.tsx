@@ -1,5 +1,6 @@
 import React from 'react';
 import { Menu } from 'semantic-ui-react';
+import { API_ROOT } from '../../config';
 
 const AppMenu = () => (
   <Menu
@@ -15,6 +16,11 @@ const AppMenu = () => (
       marginBottom: 0,
     }}
   >
+    <img
+      alt="PegAssist Logo"
+      src={`${API_ROOT}/icon/apple-icon.png`}
+      style={{ height: 50 }}
+    />
     <Menu.Item name="Home" active></Menu.Item>
     <Menu.Item name="Instructions"></Menu.Item>
     <Menu.Item name="Examples"></Menu.Item>
