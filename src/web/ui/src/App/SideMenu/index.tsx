@@ -47,12 +47,12 @@ const SideMenu = () => {
   const { step } = useStep();
   return (
     <div
+      className="side-menu-container"
       style={{
         position: 'absolute',
         paddingTop: 40,
         top: 40,
         left: 0,
-        width: 300,
         height: 'calc(100vh - 40px)',
         // backgroundColor: '#f3f4f5',
         zIndex: 2,

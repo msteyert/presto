@@ -33,3 +33,21 @@
   transform: rotate(45deg);
   -webkit-transform: rotate(45deg);
 }
+
+.side-menu-container {
+  width: 300px;
+}
+
+.main-content-container {
+  width: calc(100vw - 300px);
+  left: 300px;
+}
+@media (max-width: 800px) {
+  .side-menu-container {
+    display: none;
+  }
+  .main-content-container {
+    width: 100vw;
+    left: 0;
+  }
+}

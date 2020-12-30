@@ -29,11 +29,10 @@ function App() {
       {/* <Steps /> */}
       <SideMenu />
       <div
+        className="main-content-container"
         style={{
-          width: 'calc(100vw - 300px)',
           position: 'absolute',
           top: 40,
-          left: 300,
           height: 'calc(100vh - 40px)',
           overflowX: 'hidden',
           overflowY: 'auto',
