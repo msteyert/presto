@@ -1,5 +1,5 @@
 import React from 'react';
-import { generateSpacers } from '../../api';
+import { generateSpacers, trackEvent } from '../../api';
 import {
   useStep,
   useWtSeq,
@@ -17,6 +17,7 @@ import {
 } from '../../hooks';
 import { SpacerOption } from '../../types/presto';
 import Step1Form from './Step1Form';
+import Events from '../../api/events';
 
 const Submit = () => {
   const { setSpacer, setSelectedSpacerOption } = useSequencePredictions();
@@ -86,6 +87,8 @@ const Submit = () => {
     setMinRt(minRt);
     setMaxRt(maxRt);
     setStep(1);
+
+    trackEvent(Events.step1.submit);
 
     setTimeout(() => {
       const nextStep = document.getElementById('step-2-container');

@@ -1,4 +1,6 @@
 import React from 'react';
+import { trackEvent } from '../../api';
+import events from '../../api/events';
 import { useStep, useStep5Loading } from '../../hooks';
 import Step4Form from './Step4Form';
 
@@ -9,6 +11,8 @@ const Submit = () => {
   async function onSubmit() {
     setStep(4);
     setStep5Loading(true);
+
+    trackEvent(events.step4.submit);
 
     setTimeout(() => {
       const nextStep = document.getElementById('step-5-container');

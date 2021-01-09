@@ -48,7 +48,7 @@ const initialState: GlobalState = {
   step3Advanced: false
 };
 
-const { useGlobalState, getGlobalState } = createGlobalState(initialState);
+export const { useGlobalState, getGlobalState } = createGlobalState(initialState);
 
 export function useSequencePredictions() {
   const [templateOptions, setTemplateOptions] = useGlobalState(

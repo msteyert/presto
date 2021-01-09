@@ -1,5 +1,8 @@
-import { API_ROOT } from '../config';
+import { API_ROOT, MIXPANEL_KEY } from '../config';
 import { SpacerOption } from '../types/presto';
+import mixpanel from 'mixpanel-browser';
+import { getGlobalState } from '../hooks';
+mixpanel.init(MIXPANEL_KEY);
 
 export const generateTemplateOptions = async (
   wtSeq: string,
@@ -232,4 +235,28 @@ export const generateCSV = async (
   if (elem && elem.parentNode) {
     elem.parentNode.removeChild(elem);
   }
+};
+
+export const trackEvent = (event: string) => {
+  mixpanel.track(event, {
+    wtSeq: getGlobalState('wtSeq'),
+    mut: getGlobalState('mut'),
+    spacer: getGlobalState('spacer'),
+    customSpacer: getGlobalState('customSpacer'),
+    pam: getGlobalState('pam'),
+    minPbs: getGlobalState('minPbs'),
+    maxPbs: getGlobalState('maxPbs'),
+    minRt: getGlobalState('minRt'),
+    maxRt: getGlobalState('maxRt'),
+    selectedTemplateOption: getGlobalState('selectedTemplateOption')?.rt,
+    selectedSpacerOption: getGlobalState('selectedSpacerOption')?.spacer,
+    selectedPbsOption: getGlobalState('selectedPbsOption')?.pbs,
+    selectedPe3Option: getGlobalState('selectedPe3Option')?.secondGuide,
+    selectedPe3OptionType: getGlobalState('selectedPe3Option')?.type,
+    cleanWtSeq: getGlobalState('cleanWtSeq'),
+    cleanMutSeq: getGlobalState('cleanMutSeq'),
+    pegRNA: getGlobalState('pegRNA')?.sequence,
+    pe3sgRNASense: getGlobalState('pe3sgRNA')?.sense,
+    pe3sgRNAAntiSense: getGlobalState('pe3sgRNA')?.antisense,
+  });
 };
