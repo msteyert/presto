@@ -1,4 +1,6 @@
 import React from 'react';
+import { trackEvent } from '../../api';
+import events from '../../api/events';
 import {
   useSequencePredictions,
   useCleanWtSeq,
@@ -46,6 +48,8 @@ const Submit = () => {
       maxRt,
     );
     setStep(2);
+
+    trackEvent(events.step2.submit);
 
     setTimeout(() => {
       const nextStep = document.getElementById('step-3-container');

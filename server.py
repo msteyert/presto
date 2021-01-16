@@ -153,15 +153,14 @@ async def generate_csv(input: PegInput):
         "rtRange": rtRange,
     }
 
-    filename = f"presto-{datetime.now()}.csv"
+    filename = f"pegassist-{datetime.now()}.csv"
     local_file_path = f"{str(uuid4())}.csv"
     values = main(inputs)
     writeCsvFile(local_file_path, values)
 
     csv_stream = StringIO()
     with open(local_file_path, "r") as f:
-        for line in f.readlines():
-            print(line, sep=os.linesep, file=csv_stream)
+        print("".join([line for line in f.readlines()]), sep=None, file=csv_stream)
 
     if os.path.exists(local_file_path):
         os.remove(local_file_path)
