@@ -17,8 +17,7 @@ const Steps = ({ step = 0, vertical = false }: Props) => (
   <Step.Group ordered size="small" vertical={vertical}>
     <Step completed={step > 0} active={step === 0} onClick={onClickFactory(1)}>
       <Step.Content>
-        <Step.Title>Start</Step.Title>
-        <Step.Description>Enter Sequence information</Step.Description>
+        <Step.Description>Enter Sequence</Step.Description>
       </Step.Content>
     </Step>
 
@@ -29,7 +28,6 @@ const Steps = ({ step = 0, vertical = false }: Props) => (
       onClick={onClickFactory(2)}
     >
       <Step.Content>
-        <Step.Title>Spacer</Step.Title>
         <Step.Description>Select your spacer</Step.Description>
       </Step.Content>
     </Step>
@@ -41,7 +39,6 @@ const Steps = ({ step = 0, vertical = false }: Props) => (
       onClick={onClickFactory(3)}
     >
       <Step.Content>
-        <Step.Title>pegRNA</Step.Title>
         <Step.Description>Design your pegRNA</Step.Description>
       </Step.Content>
     </Step>
@@ -53,7 +50,6 @@ const Steps = ({ step = 0, vertical = false }: Props) => (
       onClick={onClickFactory(4)}
     >
       <Step.Content>
-        <Step.Title>PE3</Step.Title>
         <Step.Description>Choose a PE3 sequence</Step.Description>
       </Step.Content>
     </Step>
@@ -65,8 +61,7 @@ const Steps = ({ step = 0, vertical = false }: Props) => (
       onClick={onClickFactory(5)}
     >
       <Step.Content>
-        <Step.Title>Cloning</Step.Title>
-        <Step.Description>Choose your cloning strategy</Step.Description>
+        <Step.Description>Cloning strategy</Step.Description>
       </Step.Content>
     </Step>
   </Step.Group>

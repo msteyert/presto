@@ -17,7 +17,7 @@ const handleChangeFactory = (
 const CloningStrategyDropdown = () => {
   const { setCloningStrategy } = useCloningStrategy();
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div className="field-group">
       Cloning strategy
       <Dropdown
         onChange={handleChangeFactory(setCloningStrategy)}

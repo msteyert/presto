@@ -44,7 +44,7 @@ const PegRNA = () => {
       <CloningStrategyDropdown />
       {pegRNA && (
         <div style={{ marginTop: 30 }}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="field-group">
             <div style={{ display: 'flex', flexDirection: 'row' }}>
               Final pegRNA:
               <Copy

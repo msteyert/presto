@@ -9,7 +9,7 @@ const Step5 = () => {
   const { step } = useStep();
   return (
     <Grid.Row>
-      <Grid.Column width={14}>
+      <Grid.Column width={16}>
         <div id="step-5-container" style={{ marginBottom: 40 }}>
           <Segment color={step === 4 ? 'grey' : undefined}>
             <h2>Cloning</h2>

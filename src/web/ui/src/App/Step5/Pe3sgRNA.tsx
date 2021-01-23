@@ -11,7 +11,7 @@ const Pe3sgRNA = () => {
       {pe3Options.length > 0 && (
         <Fragment>
           <div style={{ flexGrow: 1 }}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="field-group">
               <div>
                 sense PE3 guide:
                 <Copy value={pe3sgRNA.sense} />
@@ -21,7 +21,7 @@ const Pe3sgRNA = () => {
           </div>
           <div style={{ height: 15 }} />
           <div style={{ flexGrow: 1 }}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="field-group">
               <div>
                 antisense PE3 guide:
                 <Copy value={pe3sgRNA.antisense} />

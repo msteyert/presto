@@ -46,38 +46,7 @@ const steps = [
 const SideMenu = () => {
   const { step } = useStep();
   return (
-    <div
-      className="side-menu-container"
-      style={{
-        position: 'absolute',
-        paddingTop: 40,
-        top: 40,
-        left: 0,
-        height: 'calc(100vh - 40px)',
-        // backgroundColor: '#f3f4f5',
-        zIndex: 2,
-        // borderRight: '2px solid rgba(34,36,38,.15)',
-      }}
-    >
-      {/* {steps.map((menuStep) => (
-        <div
-          style={{
-            paddingLeft: 16,
-            margin: 0,
-            opacity: step >= menuStep.number - 1 ? 1 : 0.25,
-            cursor: step >= menuStep.number - 1 ? 'pointer' : 'arrow',
-            // borderBottom: '1px solid rgba(34,36,38,.15)',
-          }}
-          onClick={onClickFactory(menuStep.number, setStep)}
-        >
-          <div style={{ display: 'flex' }}>
-            <h4 style={{ margin: 0 }}>{menuStep.name}</h4>
-            {step > menuStep.number - 1 && (
-              <Icon name="check circle" color="green" />
-            )}
-          </div>
-        </div>
-      ))} */}
+    <div className="side-menu-container">
       <div
         style={{ display: 'flex', justifyContent: 'center', paddingLeft: 40 }}
       >
