@@ -78,7 +78,7 @@ class PE3OptionsDropdownAvatar extends Component<Props> {
 
     return (
       <div className="field-group">
-        {this.props.title}
+        <span className="field-label">{this.props.title}</span>
         <Dropdown
           placeholder="Choose an option"
           onChange={this.handleChange}
