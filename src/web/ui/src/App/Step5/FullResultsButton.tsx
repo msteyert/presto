@@ -20,7 +20,7 @@ const FullResultsButton = () => {
   trackEvent(events.step5.submit);
   return (
     <Button onClick={handleClick} primary>
-      Donwnload Full Results
+      Download Full Results
     </Button>
   );
 };
