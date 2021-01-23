@@ -33,7 +33,7 @@ type Props = {
 //     const { value } = this.state;
 
 //     return (
-//       <div style={{ display: 'flex', flexDirection: 'column' }}>
+//       <div className="field-group">
 //         {this.props.title}
 //         <Dropdown placeholder="Choose an option" text={value.secondGuide}>
 //           <Dropdown.Menu scrolling onChange={this.handleChange}>
@@ -77,7 +77,7 @@ class PE3OptionsDropdownAvatar extends Component<Props> {
     const { value } = this.state;
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div className="field-group">
         {this.props.title}
         <Dropdown
           placeholder="Choose an option"

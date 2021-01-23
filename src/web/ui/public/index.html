@@ -43,6 +43,7 @@
     gtag('config', 'G-DV29V3TDFD');
   </script>
   <!-- Global site tag (gtag.js) - Google Analytics -->
+  <link rel="stylesheet" type="text/css" href="%PUBLIC_URL%/style-overrides.css"" media="screen"/>
 </head>
 
 <body>
@@ -76,6 +77,26 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
 
+    <!-- Custom style overrides -->
+  <script>
+      (async function styleOverride() {
+        const res = await fetch("/styles/style-overrides.css");
+        const css = await res.text();
+
+        const body = document.body || document.getElementsByTagName('body')[0]
+        const style = document.createElement('style');
+
+        body.appendChild(style);
+
+        style.type = 'text/css';
+        if (style.styleSheet) {
+          // This is required for IE8 and below.
+          style.styleSheet.cssText = css;
+        } else {
+          style.appendChild(document.createTextNode(css));
+        }
+      })();
+  </script>
 
 
 </body>

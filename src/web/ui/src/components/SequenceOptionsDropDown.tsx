@@ -24,8 +24,8 @@ export default class SequenceOptionsDropdown extends Component<Props> {
     const { value } = this.state;
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {this.props.title}
+      <div className="field-group">
+        <span className="field-label">{this.props.title}</span>
         <Dropdown
           onChange={this.handleChange}
           options={this.props.options.map((o) => ({

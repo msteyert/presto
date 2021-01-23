@@ -28,16 +28,7 @@ function App() {
 
       {/* <Steps /> */}
       <SideMenu />
-      <div
-        className="main-content-container"
-        style={{
-          position: 'absolute',
-          top: 40,
-          height: 'calc(100vh - 40px)',
-          overflowX: 'hidden',
-          overflowY: 'auto',
-        }}
-      >
+      <div className="main-content-container">
         <Grid centered>
           <Step1 />
           {step >= 1 && <Step2 />}

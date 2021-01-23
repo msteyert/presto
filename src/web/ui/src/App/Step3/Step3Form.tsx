@@ -41,6 +41,7 @@ const Step3Form = ({ onSubmit }: Props) => {
                 step3Advanced,
                 setStep3Advanced,
               )}
+              basic
             />
           </Form.Group>
         </Form>

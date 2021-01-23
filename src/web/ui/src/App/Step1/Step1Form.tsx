@@ -146,8 +146,8 @@ class SubmitForm extends Component<Props, SubmitFormState> {
           />
           {showAdvanced && (
             <Fragment>
-              <h3>Advanced Options</h3>
               <Divider />
+              <h3>Advanced Options</h3>
               <Form.Input
                 label="Custom PE spacer sequence"
                 placeholder=""
@@ -209,6 +209,7 @@ class SubmitForm extends Component<Props, SubmitFormState> {
             <Form.Button
               content={`${showAdvanced ? 'Hide' : 'Show'} Advanced Options`}
               onClick={this.handleAdvancedToggle}
+              basic
             />
           </Form.Group>
         </Form>

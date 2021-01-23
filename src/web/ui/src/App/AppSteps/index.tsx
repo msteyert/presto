@@ -16,7 +16,7 @@ const AppSteps = () => {
       }}
     >
       <Grid.Row>
-        <Grid.Column width={14}>
+        <Grid.Column width={16}>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <StepsProgress step={step} />
           </div>

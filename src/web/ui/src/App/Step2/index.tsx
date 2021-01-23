@@ -7,7 +7,7 @@ const Step2 = () => {
   const { step } = useStep();
   return (
     <Grid.Row>
-      <Grid.Column width={14}>
+      <Grid.Column width={16}>
         <div id="step-2-container">
           <Segment color={step === 1 ? 'grey' : undefined}>
             <h2>Spacer</h2>
