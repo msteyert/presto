@@ -407,18 +407,18 @@ def create_spacers(wtSeq, mutSeq, pamSeq):
 
     # Find all pams and create spacers
     spacerInfo = []
-   for partial in [
+    for partial in [
         {
             "wt": (
                 cleanSeq[0:delStart]
-                + cleanSeq[delStart : delStart + len(pamSeq) + SPACER_END_TO_CUT]
+                + cleanSeq[delStart: delStart + len(pamSeq) + SPACER_END_TO_CUT]
             ),
             "mut": mutSeq,
         },
         {
             "wt": revComp(
-                cleanSeq[delStop - len(pamSeq) - SPACER_END_TO_CUT : delStop]
-                + cleanSeq[delStop : len(cleanSeq)]
+                cleanSeq[delStop - len(pamSeq) - SPACER_END_TO_CUT: delStop]
+                + cleanSeq[delStop: len(cleanSeq)]
             ),
             "mut": revComp(mutSeq),
         },
@@ -428,8 +428,8 @@ def create_spacers(wtSeq, mutSeq, pamSeq):
             pam = match.group(1)
             i = match.start(1)
             if i > GUIDE_LENGTH:
-                spacer = partial["wt"][i - GUIDE_LENGTH : i]
-                testSeq = partial["wt"][i - GUIDE_TEST_LENGTH : i + len(pamSeq)]
+                spacer = partial["wt"][i - GUIDE_LENGTH: i]
+                testSeq = partial["wt"][i - GUIDE_TEST_LENGTH: i + len(pamSeq)]
                 cutToMut = (len(partial["wt"]) - len(pamSeq)) - (i - CUT_TO_PAM_LENGTH)
                 if cutToMut < TOO_FAR_FROM_CUT:
                     info = {
@@ -472,6 +472,7 @@ def get_defaulted_inputs(input: PegInput):
 
 def is_typeIIs_Anzalone(pegRNA):
     return "GGTCTC" in pegRNA
+
 
 def is_typeIIs_Richardson(pegRNA):
     return "GAAGAC" in pegRNA
