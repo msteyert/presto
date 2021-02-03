@@ -397,16 +397,16 @@ def build_pe3_sgRNA(sequence: str):
 def create_spacers(wtSeq, mutSeq, pamSeq):
     """finds spacers and determines best and OK options"""
 
-  wtSeq = wtSeq.upper()
-  mutSeq = mutSeq.upper()
-  pamSeq = pamSeq.upper()
+    wtSeq = wtSeq.upper()
+    mutSeq = mutSeq.upper()
+    pamSeq = pamSeq.upper()
 
-  delStart = wtSeq.find("(")
-  delStop = wtSeq.find(")") - 1
-  cleanSeq = wtSeq.replace("(", "").replace(")", "")
+    delStart = wtSeq.find("(")
+    delStop = wtSeq.find(")") - 1
+    cleanSeq = wtSeq.replace("(", "").replace(")", "")
 
-  # Find all pams and create spacers
-  spacerInfo = []
+    # Find all pams and create spacers
+    spacerInfo = []
    for partial in [
         {
             "wt": (
@@ -471,7 +471,7 @@ def get_defaulted_inputs(input: PegInput):
 
 
 def is_typeIIs_Anzalone(pegRNA):
-  return "GGTCTC" in pegRNA
+    return "GGTCTC" in pegRNA
 
 def is_typeIIs_Richardson(pegRNA):
-  return "GAAGAC" in pegRNA
+    return "GAAGAC" in pegRNA
