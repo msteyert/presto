@@ -6,42 +6,72 @@ import {
   generatePe3Options,
   generatePegRNA,
   generateSgRNA,
+  generateWarnings,
 } from '../api';
-import { GlobalState, PE3Option } from '../types/presto';
+import { GlobalState, PBSOption, PE3Option, TemplateOption } from '../types/presto';
 import { createGlobalState } from 'react-hooks-global-state';
 
 const initialState: GlobalState = {
+  wtSeq: '',
+  mut: '',
   spacer: '',
+  customSpacer: '',
+  pam: 'NGG',
+  minPbs: 8,
+  maxPbs: 18,
+  minRt: 9,
+  maxRt: 16,
   templateOptions: [],
   selectedTemplateOption: null,
+  spacerOptions: [],
+  selectedSpacerOption: null,
   pbsOptions: [],
   selectedPbsOption: null,
-  pe3bOptions: [],
   pe3Options: [],
   selectedPe3Option: null,
-  selectedPe3bOption: null,
   cleanWtSeq: '',
   cleanMutSeq: '',
   step: 0,
-  pegRNA: '',
+  pegRNA: null,
   pe3sgRNA: { sense: '', antisense: '' },
-  pe3bsgRNA: { sense: '', antisense: '' },
+  warnings: {
+    general: [],
+    pegRna: [],
+    pe3: [],
+  },
+  spacerError: false,
+  step2Loading: false,
+  step3Loading: false,
+  step4Loading: false,
+  step5Loading: false,
+  cloningStrategy: "Richardson",
+  step3Advanced: false
 };
 
-const { useGlobalState, getGlobalState } = createGlobalState(initialState);
+export const { useGlobalState, getGlobalState } = createGlobalState(initialState);
 
 export function useSequencePredictions() {
   const [templateOptions, setTemplateOptions] = useGlobalState(
     'templateOptions',
   );
 
+  const [wtSeq, setWtSeq] = useGlobalState('wtSeq');
+  const [mut, setMut] = useGlobalState('mut');
   const [spacer, setSpacer] = useGlobalState('spacer');
+
+  const [pam, setPam] = useGlobalState('pam');
+  const [minPbs, setMinPbs] = useGlobalState('minPbs');
+  const [maxPbs, setMaxPbs] = useGlobalState('maxPbs');
+  const [minRt, setMinRt] = useGlobalState('minRt');
+  const [maxRt, setMaxRt] = useGlobalState('maxRt');
+
   const [pbsOptions, setPBSOptions] = useGlobalState('pbsOptions');
-  const [pe3bOptions, setPe3bOptions] = useGlobalState('pe3bOptions');
   const [pe3Options, setPe3Options] = useGlobalState('pe3Options');
   const [pegRNA, setPegRNA] = useGlobalState('pegRNA');
   const [pe3sgRNA, setPe3sgRNA] = useGlobalState('pe3sgRNA');
-  const [pe3bsgRNA, setPe3bsgRNA] = useGlobalState('pe3bsgRNA');
+  const [selectedSpacerOption, setSelectedSpacerOption] = useGlobalState(
+    'selectedSpacerOption',
+  );
   const [selectedTemplateOption, setSelectedTemplateOption] = useGlobalState(
     'selectedTemplateOption',
   );
@@ -51,47 +81,85 @@ export function useSequencePredictions() {
   const [selectedPe3Option, setSelectedPe3Option] = useGlobalState(
     'selectedPe3Option',
   );
-  const [selectedPe3bOption, setSelectedPe3bOption] = useGlobalState(
-    'selectedPe3bOption',
-  );
+  const [warnings, setWarnings] = useGlobalState('warnings');
 
   async function updateSequencePredictions(
     wtSeq: string,
     mut: string,
     spacer: string,
+    pam: string,
+    minPbs: number,
+    maxPbs: number,
+    minRt: number,
+    maxRt: number,
   ) {
     setTemplateOptions(
       await generateTemplateOptions(
         wtSeq.toUpperCase(),
         mut.toUpperCase(),
         spacer.toUpperCase(),
+        pam.toUpperCase(),
+        minPbs,
+        maxPbs,
+        minRt,
+        maxRt,
       ),
     );
+
+    setWarnings(
+      await generateWarnings(
+        wtSeq.toUpperCase(),
+        mut.toUpperCase(),
+        spacer.toUpperCase(),
+        pam.toUpperCase(),
+        minPbs,
+        maxPbs,
+        minRt,
+        maxRt,
+      ),
+    );
+
+    setWtSeq(wtSeq.toUpperCase());
+    setMut(mut.toUpperCase());
+    setSpacer(spacer.toUpperCase());
+
+    setPam(pam.toUpperCase());
+    setMinPbs(minPbs);
+    setMaxPbs(maxPbs);
+    setMinRt(minRt);
+    setMaxRt(maxRt);
+
     if (getGlobalState('templateOptions').length > 0) {
-      setSelectedTemplateOption(getGlobalState('templateOptions')[0].rt);
+      setSelectedTemplateOption(getGlobalState('templateOptions')[0]);
     }
     setPBSOptions(
       await generatePrimerBindingSiteOptions(
         wtSeq.toUpperCase(),
         mut.toUpperCase(),
         spacer.toUpperCase(),
+        pam.toUpperCase(),
+        minPbs,
+        maxPbs,
+        minRt,
+        maxRt,
       ),
     );
     if (getGlobalState('pbsOptions').length > 0) {
-      setSelectedPbsOption(getGlobalState('pbsOptions')[0].pbs);
+      setSelectedPbsOption(getGlobalState('pbsOptions')[0]);
     }
     const pe3Options: PE3Option[] = await generatePe3Options(
       wtSeq.toUpperCase(),
       mut.toUpperCase(),
       spacer.toUpperCase(),
+      pam.toUpperCase(),
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
     );
-    setPe3bOptions(pe3Options.filter((option) => option.type === 'pe3b'));
-    if (getGlobalState('pe3bOptions').length > 0) {
-      setSelectedPe3bOption(getGlobalState('pe3bOptions')[0].secondGuide);
-    }
-    setPe3Options(pe3Options.filter((option) => option.type === 'pe3'));
+    setPe3Options(pe3Options);
     if (getGlobalState('pe3Options').length > 0) {
-      setSelectedPe3Option(getGlobalState('pe3Options')[0].secondGuide);
+      setSelectedPe3Option(getGlobalState('pe3Options')[0]);
     }
 
     updatePegRNA();
@@ -105,75 +173,90 @@ export function useSequencePredictions() {
     );
     const globalSelectedPbsOption = getGlobalState('selectedPbsOption');
     if (globalSelectedTemplateOption && globalSelectedPbsOption) {
-      const { sequence } = await generatePegRNA(
+      const pegRNA = await generatePegRNA(
         globalSpacer.toUpperCase(),
-        globalSelectedTemplateOption.toUpperCase(),
-        globalSelectedPbsOption.toUpperCase(),
+        globalSelectedTemplateOption.rt.toUpperCase(),
+        globalSelectedPbsOption.pbs.toUpperCase(),
       );
-      setPegRNA(sequence);
+      setPegRNA(pegRNA);
     }
   }
 
-  function updateSelectedTemplateOption(option: string) {
+  function updateSelectedTemplateOption(option: TemplateOption) {
     setSelectedTemplateOption(option);
     updatePegRNA();
   }
 
-  function updateSelectedPbsOption(option: string) {
+  function updateSelectedPbsOption(option: PBSOption) {
     setSelectedPbsOption(option);
     updatePegRNA();
   }
 
-  function updateSelectedPe3Option(option: string) {
+  function updateSelectedPe3Option(option: PE3Option) {
     setSelectedPe3Option(option);
-    updateSgRNA();
-  }
-  function updateSelectedPe3bOption(option: string) {
-    setSelectedPe3bOption(option);
     updateSgRNA();
   }
 
   async function updateSgRNA() {
     const globalSelectedPe3Option = getGlobalState('selectedPe3Option');
-    const globalSelectedPe3bOption = getGlobalState('selectedPe3bOption');
     if (globalSelectedPe3Option) {
-      const sgRNA = await generateSgRNA(globalSelectedPe3Option.toUpperCase());
+      const sgRNA = await generateSgRNA(
+        globalSelectedPe3Option.secondGuide.toUpperCase(),
+      );
       setPe3sgRNA(sgRNA);
-    }
-    if (globalSelectedPe3bOption) {
-      const sgRNA = await generateSgRNA(globalSelectedPe3bOption.toUpperCase());
-      setPe3bsgRNA(sgRNA);
     }
   }
 
   return {
+    wtSeq,
+    mut,
     spacer,
+    pam,
+    minPbs,
+    maxPbs,
+    minRt,
+    maxRt,
     templateOptions,
     pbsOptions,
-    pe3bOptions,
+    selectedPbsOption,
     pe3Options,
     pegRNA,
     pe3sgRNA,
-    pe3bsgRNA,
+    warnings,
     setSpacer,
     selectedTemplateOption,
     updateSelectedTemplateOption,
     updateSelectedPbsOption,
     updateSelectedPe3Option,
-    updateSelectedPe3bOption,
     updateSequencePredictions,
     updatePegRNA,
     updateSgRNA,
+    selectedSpacerOption,
+    setSelectedSpacerOption,
   };
 }
 
 export function useCleanWtSeq() {
   const [cleanWtSeq, setCleanWtSeq] = useGlobalState('cleanWtSeq');
-  async function getCleanWtSeq(wtSeq: string, mut: string, spacer: string) {
+  async function getCleanWtSeq(
+    wtSeq: string,
+    mut: string,
+    spacer: string,
+    pam: string,
+    minPbs: number,
+    maxPbs: number,
+    minRt: number,
+    maxRt: number,
+  ) {
     const { sequence } = await generateCleanWtSeq(
       wtSeq.toUpperCase(),
       mut.toUpperCase(),
       spacer.toUpperCase(),
+      pam.toUpperCase(),
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
     );
     setCleanWtSeq(sequence);
   }
@@ -184,17 +267,112 @@ export function useCleanWtSeq() {
 }
 export function useCleanMutSeq() {
   const [cleanMutSeq, setCleanMutSeq] = useGlobalState('cleanMutSeq');
-  async function getCleanMutSeq(wtSeq: string, mut: string, spacer: string) {
+  async function getCleanMutSeq(
+    wtSeq: string,
+    mut: string,
+    spacer: string,
+    pam: string,
+    minPbs: number,
+    maxPbs: number,
+    minRt: number,
+    maxRt: number,
+  ) {
     const { sequence } = await generateMutSeq(
       wtSeq.toUpperCase(),
       mut.toUpperCase(),
       spacer.toUpperCase(),
+      pam.toUpperCase(),
+      minPbs,
+      maxPbs,
+      minRt,
+      maxRt,
     );
     setCleanMutSeq(sequence);
   }
   return {
     cleanMutSeq,
     getCleanMutSeq,
+  };
+}
+
+export function useWtSeq() {
+  const [wtSeq, setWtSeq] = useGlobalState('wtSeq');
+
+  return {
+    wtSeq,
+    setWtSeq,
+  };
+}
+
+export function useMut() {
+  const [mut, setMut] = useGlobalState('mut');
+
+  return {
+    mut,
+    setMut,
+  };
+}
+
+export function useCustomSpacer() {
+  const [customSpacer, setCustomSpacer] = useGlobalState('customSpacer');
+
+  return {
+    customSpacer,
+    setCustomSpacer,
+  };
+}
+
+export function usePam() {
+  const [pam, setPam] = useGlobalState('pam');
+
+  return {
+    pam,
+    setPam,
+  };
+}
+
+export function useMinPbs() {
+  const [minPbs, setMinPbs] = useGlobalState('minPbs');
+
+  return {
+    minPbs,
+    setMinPbs,
+  };
+}
+
+export function useMaxPbs() {
+  const [maxPbs, setMaxPbs] = useGlobalState('maxPbs');
+
+  return {
+    maxPbs,
+    setMaxPbs,
+  };
+}
+
+export function useMinRt() {
+  const [minRt, setMinRt] = useGlobalState('minRt');
+
+  return {
+    minRt,
+    setMinRt,
+  };
+}
+
+export function useMaxRt() {
+  const [maxRt, setMaxRt] = useGlobalState('maxRt');
+
+  return {
+    maxRt,
+    setMaxRt,
+  };
+}
+
+export function useSpacerOptions() {
+  const [spacerOptions, setSpacerOptions] = useGlobalState('spacerOptions');
+
+  return {
+    spacerOptions,
+    setSpacerOptions,
   };
 }
 
@@ -215,12 +393,12 @@ export function usePe3sgRNA() {
     setPe3SgRNA,
   };
 }
-export function usePe3bsgRNA() {
-  const [pe3bsgRNA, setPe3bSgRNA] = useGlobalState('pe3bsgRNA');
 
+export function useSpacerError() {
+  const [spacerError, setSpacerError] = useGlobalState('spacerError');
   return {
-    pe3bsgRNA,
-    setPe3bSgRNA,
+    spacerError,
+    setSpacerError,
   };
 }
 
@@ -229,5 +407,52 @@ export function useStep() {
   return {
     step,
     setStep,
+  };
+}
+
+export function useStep2Loading() {
+  const [step2Loading, setStep2Loading] = useGlobalState('step2Loading');
+  return {
+    step2Loading,
+    setStep2Loading,
+  };
+}
+
+export function useStep3Loading() {
+  const [step3Loading, setStep3Loading] = useGlobalState('step3Loading');
+  return {
+    step3Loading,
+    setStep3Loading,
+  };
+}
+export function useStep4Loading() {
+  const [step4Loading, setStep4Loading] = useGlobalState('step4Loading');
+  return {
+    step4Loading,
+    setStep4Loading,
+  };
+}
+
+export function useStep5Loading() {
+  const [step5Loading, setStep5Loading] = useGlobalState('step5Loading');
+  return {
+    step5Loading,
+    setStep5Loading,
+  };
+}
+
+export function useCloningStrategy() {
+  const [cloningStrategy, setCloningStrategy] = useGlobalState('cloningStrategy');
+  return {
+    cloningStrategy,
+    setCloningStrategy,
+  };
+}
+
+export function useStep3Advanced() {
+  const [step3Advanced, setStep3Advanced] = useGlobalState('step3Advanced');
+  return {
+    step3Advanced,
+    setStep3Advanced,
   };
 }

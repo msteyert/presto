@@ -1,6 +1,9 @@
 from math import ceil, floor
 import re
 import math
+from typing import Sequence
+
+from .models import PegInput
 
 # Input Defaults
 DEFAULT_PAM = "NGG"
@@ -56,6 +59,17 @@ TERM_BBSI_3BP = "TTTTGCCGGTCTTCTAA"
 THREE_PRIME_FILLER = "TGGTTTCTTAGACGTCACTCTCGTCACCGTCGTGAAGCACCGGCGGCATGGACGAGCTGTACAAG"
 SENSE_PE3_OVERHANG = "CACC"
 ANTISENSE_PE3_OVERHANG = "AAAC"
+
+ANNOTATION_COLORS = [
+    "#b3e2cd",
+    "#fdcdac",
+    "#cbd5e8",
+    "#f4cae4",
+    "#e6f5c9",
+    "#fff2ae",
+    "#f1e2cc",
+    "#cccccc",
+]
 
 
 def revComp(seq):
@@ -287,8 +301,87 @@ def trim_sequence(sequence: str, target_length: int = 250):
     bases_to_trim = (len(sequence) - target_length) / 2
     five_prime_trim = ceil(bases_to_trim)
     three_prime_trim = floor(bases_to_trim)
-    print(bases_to_trim, five_prime_trim, three_prime_trim)
-    return sequence[five_prime_trim:][:-three_prime_trim]
+    return {
+        "sequence": sequence[five_prime_trim:][:-three_prime_trim],
+        "five_prime_filler": FIVE_PRIME_FILLER[five_prime_trim:],
+        "three_prime_filler": THREE_PRIME_FILLER[:-three_prime_trim],
+    }
+
+
+def build_final_pegRNA(spacer: str, rtt: str, pbs: str):
+    untrimmed = build_untrimmed_pegRNA(spacer=spacer, rtt=rtt, pbs=pbs)
+    trimmed = trim_sequence(sequence=untrimmed)
+    five_prime_filler_start = 0
+    three_bp_bbsi_start = (
+        five_prime_filler_start + len(trimmed["five_prime_filler"]) + 1
+    )
+    spacer_start = three_bp_bbsi_start + len(THREE_BP_BBSI) + 1
+    cas9_scaffold_start = spacer_start + len(spacer) + 1
+    rtt_start = cas9_scaffold_start + len(CAS9_SCAFFOLD) + 1
+    pbs_start = rtt_start + len(rtt) + 1
+    term_bbsi_3bp_start = pbs_start + len(pbs) + 1
+    three_prime_filler_start = term_bbsi_3bp_start + len(TERM_BBSI_3BP) + 1
+    return {
+        "sequence": trimmed["sequence"],
+        "annotations": [
+            {
+                "start": five_prime_filler_start,
+                "end": three_bp_bbsi_start,
+                "color": ANNOTATION_COLORS[0],
+                "name": "filler",
+                "sequence": trimmed["five_prime_filler"],
+            },
+            {
+                "start": three_bp_bbsi_start,
+                "end": spacer_start,
+                "color": ANNOTATION_COLORS[1],
+                "name": "three_bp_bbsi",
+                "sequence": THREE_BP_BBSI,
+            },
+            {
+                "start": spacer_start,
+                "end": cas9_scaffold_start,
+                "color": ANNOTATION_COLORS[2],
+                "name": "spacer",
+                "sequence": spacer,
+            },
+            {
+                "start": cas9_scaffold_start,
+                "end": rtt_start,
+                "color": ANNOTATION_COLORS[3],
+                "name": "cas9_scaffold",
+                "sequence": CAS9_SCAFFOLD,
+            },
+            {
+                "start": rtt_start,
+                "end": pbs_start,
+                "color": ANNOTATION_COLORS[4],
+                "name": "rtt",
+                "sequence": rtt,
+            },
+            {
+                "start": pbs_start,
+                "end": term_bbsi_3bp_start,
+                "color": ANNOTATION_COLORS[5],
+                "name": "pbs",
+                "sequence": pbs,
+            },
+            {
+                "start": term_bbsi_3bp_start,
+                "end": three_prime_filler_start,
+                "color": ANNOTATION_COLORS[6],
+                "name": "term_bbsi_3bp",
+                "sequence": TERM_BBSI_3BP,
+            },
+            {
+                "start": three_prime_filler_start,
+                "end": len(trimmed["sequence"]),
+                "color": ANNOTATION_COLORS[0],
+                "name": "filler",
+                "sequence": trimmed["three_prime_filler"],
+            },
+        ],
+    }
 
 
 def build_pe3_sgRNA(sequence: str):
@@ -317,28 +410,28 @@ def create_spacers(wtSeq, mutSeq, pamSeq):
    for partial in [
         {
             "wt": (
-                cleanSeq[0: delStart] +
-                cleanSeq[delStart: delStart + len(pamSeq) + SPACER_END_TO_CUT]
+                cleanSeq[0:delStart]
+                + cleanSeq[delStart : delStart + len(pamSeq) + SPACER_END_TO_CUT]
             ),
             "mut": mutSeq,
         },
         {
             "wt": revComp(
-                cleanSeq[delStop - len(pamSeq) - SPACER_END_TO_CUT: delStop] +
-                cleanSeq[delStop: len(cleanSeq)]
+                cleanSeq[delStop - len(pamSeq) - SPACER_END_TO_CUT : delStop]
+                + cleanSeq[delStop : len(cleanSeq)]
             ),
             "mut": revComp(mutSeq),
-        }
+        },
     ]:
         pams = re.finditer(ntToRegex(pamSeq), partial["wt"])
         for match in pams:
             pam = match.group(1)
             i = match.start(1)
-            if (i > GUIDE_LENGTH):
-                spacer = partial["wt"][i-GUIDE_LENGTH: i]
-                testSeq = partial["wt"][i-GUIDE_TEST_LENGTH: i+len(pamSeq)]
-                cutToMut = (len(partial["wt"])-len(pamSeq)) - (i-CUT_TO_PAM_LENGTH)
-                if (cutToMut < TOO_FAR_FROM_CUT):
+            if i > GUIDE_LENGTH:
+                spacer = partial["wt"][i - GUIDE_LENGTH : i]
+                testSeq = partial["wt"][i - GUIDE_TEST_LENGTH : i + len(pamSeq)]
+                cutToMut = (len(partial["wt"]) - len(pamSeq)) - (i - CUT_TO_PAM_LENGTH)
+                if cutToMut < TOO_FAR_FROM_CUT:
                     info = {
                         "spacer": spacer,
                         "cutToMut": cutToMut,
@@ -350,6 +443,31 @@ def create_spacers(wtSeq, mutSeq, pamSeq):
     spacerInfo.sort(key=lambda info: info["quality"])
 
     return spacerInfo
+
+
+def get_defaulted_inputs(input: PegInput):
+    "generates an input object with defaults filled in for missing values"
+    if input.minPbs and input.maxPbs:
+        pbsRange = {"start": input.minPbs, "stop": input.maxPbs}
+    else:
+        pbsRange = {
+            "start": DEFAULT_PBS_RANGE["start"],
+            "stop": DEFAULT_PBS_RANGE["stop"],
+        }
+
+    if input.minRt and input.maxRt:
+        rtRange = {"start": input.minRt, "stop": input.maxRt}
+    else:
+        rtRange = calcRtRange(input.mut)
+
+    return {
+        "wildtype": input.wtSeq,
+        "mutation": input.mut,
+        "spacer": input.spacer,
+        "pam": input.pam or DEFAULT_PAM,
+        "pbsRange": pbsRange,
+        "rtRange": rtRange,
+    }
 
 
 def is_typeIIs_Anzalone(pegRNA):

@@ -1,20 +1,24 @@
 export type TemplateOption = {
-  flapLength: number;
-  rt: string;
+  error: string;
+  fhr: string;
+  fhrGC: number;
+  fhrLength: number;
   isDefault: boolean;
-  flapGC: number;
+  rt: string;
+  rtLength: number;
+  rtPolyT: boolean;
   rtTM: number;
   startsWithC: boolean;
-  rtPolyT: boolean;
 };
 
 export type PBSOption = {
+  error: string;
+  isDefault: boolean;
   length: number;
   pbs: string;
-  isDefault: boolean;
   pbsGC: number;
-  pbsTM: number;
   pbsPolyT: boolean;
+  pbsTM: number;
 };
 
 export type PE3Option = {
@@ -26,26 +30,62 @@ export type PE3Option = {
   type: string;
 };
 
-export type GlobalState = {
+export type SpacerOption = {
   spacer: string;
+  cutToMut: number | null;
+  quality: number | null;
+};
+
+export type FinalPegRNAAnnotation = {
+  start: number;
+  end: number;
+  color: string;
+  name: string;
+  direction: number;
+  sequence: string;
+};
+
+export type FinalPegRNA = {
+  sequence: string;
+  annotations: FinalPegRNAAnnotation[];
+};
+
+export type GlobalState = {
+  wtSeq: string;
+  mut: string;
+  spacer: string;
+  customSpacer: string;
+  pam: string;
+  minPbs: number;
+  maxPbs: number;
+  minRt: number;
+  maxRt: number;
+  spacerOptions: SpacerOption[];
+  selectedSpacerOption: SpacerOption | null;
   templateOptions: TemplateOption[];
-  selectedTemplateOption: string | null;
+  selectedTemplateOption: TemplateOption | null;
   pbsOptions: PBSOption[];
-  selectedPbsOption: string | null;
-  pe3bOptions: PE3Option[];
+  selectedPbsOption: PBSOption | null;
   pe3Options: PE3Option[];
-  selectedPe3Option: string | null;
-  selectedPe3bOption: string | null;
+  selectedPe3Option: PE3Option | null;
   cleanWtSeq: string;
   cleanMutSeq: string;
   step: number;
-  pegRNA: string;
+  pegRNA: FinalPegRNA | null;
   pe3sgRNA: {
     sense: string;
     antisense: string;
   };
-  pe3bsgRNA: {
-    sense: string;
-    antisense: string;
+  warnings: {
+    general: string[];
+    pegRna: string[];
+    pe3: string[];
   };
+  spacerError: boolean;
+  step2Loading: boolean;
+  step3Loading: boolean;
+  step4Loading: boolean;
+  step5Loading: boolean;
+  cloningStrategy: string;
+  step3Advanced: boolean
 };

@@ -1,3 +1,6 @@
+html {
+  opacity: 0;
+}
 .App {
   background-color: #ffffff;
   min-height: 100vh;
@@ -5,4 +8,45 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.arrow {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+}
+
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.left {
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+
+.up {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+
+.down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.main-content-container {
+  width: calc(100vw - 300px);
+  left: 300px;
+}
+@media (max-width: 800px) {
+  .side-menu-container {
+    display: none;
+  }
+  .main-content-container {
+    width: 100vw;
+    left: 0;
+  }
 }

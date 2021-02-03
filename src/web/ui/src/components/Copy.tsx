@@ -5,7 +5,7 @@ import copy from 'copy-to-clipboard';
 const DEFAULT_HELP_TEXT = 'click to copy';
 const SUCCESS_HELP_TEXT = "you're all set";
 type Props = {
-  value: string;
+  value: string | undefined;
 };
 
 class Copy extends Component<Props> {
@@ -14,12 +14,14 @@ class Copy extends Component<Props> {
     isOpen: false,
   };
   handleCopy = () => {
-    copy(this.props.value);
-    this.setState(() => ({ helpText: SUCCESS_HELP_TEXT }));
-    console.log('indicate');
-    setTimeout(() => {
-      this.setState(() => ({ helpText: DEFAULT_HELP_TEXT }));
-    }, 1000);
+    if (this.props.value) {
+      copy(this.props.value);
+      this.setState(() => ({ helpText: SUCCESS_HELP_TEXT }));
+      console.log('indicate');
+      setTimeout(() => {
+        this.setState(() => ({ helpText: DEFAULT_HELP_TEXT }));
+      }, 1000);
+    }
   };
 
   handleMouseOver = () => {
