@@ -9,11 +9,12 @@ import {
 const Pe3sgRNA = () => {
   const { pe3Options } = useSequencePredictions();
   const { pe3sgRNA } = usePe3sgRNA();
+  const { selectedPe3Option } = useSequencePredictions();
   const { cloningStrategy } = useCloningStrategy();
 
   return (
     <div>
-      {pe3Options.length > 0 && (
+      {pe3Options.length > 0 && selectedPe3Option?.secondGuide !== 'None' && (
         <Fragment>
           <div style={{ flexGrow: 1 }}>
             <div className="field-group">
@@ -21,11 +22,19 @@ const Pe3sgRNA = () => {
                 <span className="field-label">
                   PE3 {cloningStrategy !== 'None' ? 'sense' : ''}:
                 </span>
-                <Copy value={pe3sgRNA.sense} />
+                <Copy
+                  value={
+                    cloningStrategy !== 'None'
+                      ? pe3sgRNA.sense
+                      : selectedPe3Option?.secondGuide
+                  }
+                />
               </div>
               <p>
                 <span className="generic-output-sequence">
-                  {pe3sgRNA.sense}
+                  {cloningStrategy !== 'None'
+                    ? pe3sgRNA.sense
+                    : selectedPe3Option?.secondGuide}
                 </span>
               </p>
             </div>

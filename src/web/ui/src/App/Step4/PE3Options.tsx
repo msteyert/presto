@@ -86,13 +86,15 @@ class PE3OptionsDropdownAvatar extends Component<Props> {
             key: o.secondGuide,
             text: o.secondGuide,
             value: o.secondGuide,
-            image: {
-              avatar: true,
-              src:
-                o.type === 'pe3'
-                  ? `${API_ROOT}/images/pe3pill.png`
-                  : `${API_ROOT}/images/pe3bpill.png`,
-            },
+            image:
+              o.type !== 'None'
+                ? {
+                    src:
+                      o.type === 'pe3'
+                        ? `${API_ROOT}/images/pe3pill.png`
+                        : `${API_ROOT}/images/pe3bpill.png`,
+                  }
+                : undefined,
           }))}
           value={value}
           selection

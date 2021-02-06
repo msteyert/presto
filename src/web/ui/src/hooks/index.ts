@@ -167,7 +167,17 @@ export function useSequencePredictions() {
       minRt,
       maxRt,
     );
-    setPe3Options(pe3Options);
+    setPe3Options([
+      ...pe3Options,
+      {
+        pamStart: 0,
+        cutPE3: 0,
+        cutDiff: 0,
+        secondGuide: 'None',
+        rcSecondGuide: 'None',
+        type: 'None',
+      },
+    ]);
     if (getGlobalState('pe3Options').length > 0) {
       setSelectedPe3Option(getGlobalState('pe3Options')[0]);
     }

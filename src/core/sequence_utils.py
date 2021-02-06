@@ -50,17 +50,13 @@ AMBIGUOUS_BASES = {
     "B": "[C,G,T]",
 }
 
-# FIVE_PRIME_FILLER = (
-#     "GTGAGCAAGGGCGAGGAGGACATGGTCGTACCGTCACGCTTGCCATCATGGGTTATTGTCTCATGAG"
-# )
-FIVE_PRIME_FILLER = "__REPLACE_WITH_REAL_FILLER__" * 10
+FIVE_PRIME_FILLER = "TGAGCAAGGGCGAGGAGGATAACATGGCCATCATCAAGGAGTTCATGCGCTTCAAGGTGCACATGGAGGGCTCCGTGAACGGCGGGTTATTGTCTCATGAGCGG"
 THREE_BP_BBSI = "CGGGAAGACCTCACC"
 CAS9_SCAFFOLD = "GTTTCAGAGCTATGCTGGAAACAGCATAGCAAGTTGAAATAAGGCTAGTCCGTTATCAACTTGAAAAAGTGGCACCGAGTCGGTGC"
 TERM_BBSI_3BP = "TTTTGCCGGTCTTCTAA"
-# THREE_PRIME_FILLER = (
-#     "TGGTTTCTTAGACGTCACTCTCGTCACCGTCGTGAAGCACCGGCGGCATGGACGAGCTGTACAAG"
-# )
-THREE_PRIME_FILLER = "__REPLACE_WITH_REAL_FILLER__" * 10
+THREE_PRIME_FILLER = (
+    "TAATGGTTTCTTAGACGTCACTCTCGTCACCGTCGTGAAGCACCGGCGGCATGGACGAGCTGTACAAG"
+)
 SENSE_PE3_OVERHANG = "CACC"
 ANTISENSE_PE3_OVERHANG = "AAAC"
 
@@ -132,7 +128,7 @@ def createRT(mutSeq, mut, cut, delStart, rtRange):
     """create reverse transcriptase template options"""
     rtInfo = []
     for i in range(rtRange["start"], rtRange["stop"]):
-        rt = revComp(mutSeq[cut: cut + i])
+        rt = revComp(mutSeq[cut : cut + i])
         fhrStart = delStart + len(mut)
         fhrStop = cut + i
         fhrIsValid = fhrStart < fhrStop
@@ -175,7 +171,7 @@ def createPBS(mutSeq, cut, pbsRange):
     """create primer binding site options"""
     pbsInfo = []
     for i in range(pbsRange["start"], pbsRange["stop"]):
-        pbs = revComp(mutSeq[(cut - i): cut])
+        pbs = revComp(mutSeq[(cut - i) : cut])
         pbsIsValid = cut - i >= 0
         info = {
             "length": i,
@@ -201,13 +197,13 @@ def createPE3(wtSeq, mutSeq, pamSeq, cut):
     for match in pams:
         pam = match.group(1)
         i = match.start(1)
-        testSeq = rcMutSeq[i - GUIDE_TEST_LENGTH: i + len(pamSeq)]
+        testSeq = rcMutSeq[i - GUIDE_TEST_LENGTH : i + len(pamSeq)]
         info = {
             "pamStart": i,
             "cutPE3": i - CUT_TO_PAM_LENGTH,
             "cutDiff": abs(i - CUT_TO_PAM_LENGTH - cut),
-            "secondGuide": rcMutSeq[i - GUIDE_LENGTH: i],
-            "rcSecondGuide": revComp(rcMutSeq[i - GUIDE_LENGTH: i]),
+            "secondGuide": rcMutSeq[i - GUIDE_LENGTH : i],
+            "rcSecondGuide": revComp(rcMutSeq[i - GUIDE_LENGTH : i]),
             "type": "pe3b" if rcWtSeq.find(testSeq) < 0 else "pe3",
         }
         pe3Info.append(info)
@@ -217,9 +213,9 @@ def createPE3(wtSeq, mutSeq, pamSeq, cut):
 
 def checkPam(wtSeq, mutSeq, pamSeq, cut):
     """check that PAM is correct & that it doesn't exist in mutSeq"""
-    pamCheck = wtSeq[cut + CUT_TO_PAM_LENGTH: cut + CUT_TO_PAM_LENGTH + len(pamSeq)]
-    pamCutCheck = wtSeq[cut: cut + CUT_TO_PAM_LENGTH] + pamSeq
-    mutCutCheck = mutSeq[cut: cut + CUT_TO_PAM_LENGTH + len(pamSeq)]
+    pamCheck = wtSeq[cut + CUT_TO_PAM_LENGTH : cut + CUT_TO_PAM_LENGTH + len(pamSeq)]
+    pamCutCheck = wtSeq[cut : cut + CUT_TO_PAM_LENGTH] + pamSeq
+    mutCutCheck = mutSeq[cut : cut + CUT_TO_PAM_LENGTH + len(pamSeq)]
     return {
         "wrongSpacer": not re.match(ntToRegex(pamSeq), pamCheck),
         "reCutOccurs": re.match(ntToRegex(pamCutCheck), mutCutCheck),
@@ -235,13 +231,13 @@ def find_deletion_range(sequence):
 def find_deletion(sequence):
     """find the deletion sequence"""
     [delStart, delStop] = find_deletion_range(sequence)
-    return sequence[delStart + 1: delStop]
+    return sequence[delStart + 1 : delStop]
 
 
 def create_mutSeq(wtSeq, mut):
     """Create mutant sequence by removing any deletions and adding any insertions"""
     [delStart, delStop] = find_deletion_range(wtSeq)
-    mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop + 1: len(wtSeq)]
+    mutSeq = wtSeq[0:delStart] + mut + wtSeq[delStop + 1 : len(wtSeq)]
     return clean_sequence(mutSeq)
 
 
@@ -253,7 +249,7 @@ def clean_sequence(wtSeq):
 def create_final_wtSeq(wtSeq):
     [delStart, delStop] = find_deletion_range(wtSeq)
     deletion = find_deletion(wtSeq)
-    return wtSeq[0:delStart] + deletion + wtSeq[delStop + 1: len(wtSeq)]
+    return wtSeq[0:delStart] + deletion + wtSeq[delStop + 1 : len(wtSeq)]
 
 
 def find_spacer_cut(sequence, spacer):
@@ -300,20 +296,17 @@ def trim_sequence(sequence: str, target_length: int = 300):
     If the sequence is already under the target length, it is returned unchanged. If the sequence
     is an odd number length, the 5 prime end is trimmed down one extra base to reach the
     target length"""
-    print(f"sequence length: {len(sequence)}")
     if len(sequence) <= target_length:
         return {
             "sequence": sequence,
             "five_prime_filler": FIVE_PRIME_FILLER,
             "three_prime_filler": THREE_PRIME_FILLER,
         }
-    bases_to_trim = (len(sequence) - target_length) / 2
-    five_prime_trim = ceil(bases_to_trim)
-    three_prime_trim = floor(bases_to_trim)
+    bases_to_trim = len(sequence) - target_length
     return {
-        "sequence": sequence[five_prime_trim:][:-three_prime_trim],
-        "five_prime_filler": FIVE_PRIME_FILLER[five_prime_trim:],
-        "three_prime_filler": THREE_PRIME_FILLER[:-three_prime_trim],
+        "sequence": sequence[bases_to_trim:],
+        "five_prime_filler": FIVE_PRIME_FILLER[bases_to_trim:],
+        "three_prime_filler": THREE_PRIME_FILLER,
     }
 
 
@@ -420,14 +413,14 @@ def create_spacers(wtSeq, mutSeq, pamSeq):
         {
             "wt": (
                 cleanSeq[0:delStart]
-                + cleanSeq[delStart: delStart + len(pamSeq) + SPACER_END_TO_CUT]
+                + cleanSeq[delStart : delStart + len(pamSeq) + SPACER_END_TO_CUT]
             ),
             "mut": mutSeq,
         },
         {
             "wt": revComp(
-                cleanSeq[delStop - len(pamSeq) - SPACER_END_TO_CUT: delStop]
-                + cleanSeq[delStop: len(cleanSeq)]
+                cleanSeq[delStop - len(pamSeq) - SPACER_END_TO_CUT : delStop]
+                + cleanSeq[delStop : len(cleanSeq)]
             ),
             "mut": revComp(mutSeq),
         },
@@ -437,8 +430,8 @@ def create_spacers(wtSeq, mutSeq, pamSeq):
             pam = match.group(1)
             i = match.start(1)
             if i > GUIDE_LENGTH:
-                spacer = partial["wt"][i - GUIDE_LENGTH: i]
-                testSeq = partial["wt"][i - GUIDE_TEST_LENGTH: i + len(pamSeq)]
+                spacer = partial["wt"][i - GUIDE_LENGTH : i]
+                testSeq = partial["wt"][i - GUIDE_TEST_LENGTH : i + len(pamSeq)]
                 cutToMut = (len(partial["wt"]) - len(pamSeq)) - (i - CUT_TO_PAM_LENGTH)
                 if cutToMut < TOO_FAR_FROM_CUT:
                     info = {
