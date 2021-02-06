@@ -41,6 +41,20 @@ html {
   width: calc(100vw - 300px);
   left: 300px;
 }
+
+.generic-output-sequence,
+.spacer-output-sequence {
+  padding: 0 5px;
+  border-radius: 5px;
+  word-break: break-word;
+}
+.generic-output-sequence {
+  background-color: #cccccc;
+}
+.spacer-output-sequence {
+  background-color: #cbd5e8;
+}
+
 @media (max-width: 800px) {
   .side-menu-container {
     display: none;

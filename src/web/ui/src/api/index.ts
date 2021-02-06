@@ -154,6 +154,14 @@ export const generateSgRNA = async (pe3: string) => {
   return await res.json();
 };
 
+export const generateSpacerSgRNA = async (spacer: string) => {
+  const res = await fetch(`${API_ROOT}/generate/spacer_sgrna`, {
+    method: 'post',
+    body: JSON.stringify({ spacer, wtSeq: '', mut: '' }),
+  });
+  return await res.json();
+};
+
 export const generateSpacers = async (
   wtSeq: string,
   mut: string,
