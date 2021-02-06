@@ -2,7 +2,7 @@ import React, { Component, SetStateAction, SyntheticEvent } from 'react';
 import { Dropdown, DropdownProps } from 'semantic-ui-react';
 import { useCloningStrategy } from '../../hooks';
 
-const options = ['Richardson', 'None'].map((o) => ({
+const options = ['Richardson & Steyert et al. 2021', 'None'].map((o) => ({
   key: o,
   text: o,
   value: o,

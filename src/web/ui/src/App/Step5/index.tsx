@@ -4,6 +4,7 @@ import { useStep } from '../../hooks';
 import FullResultsButton from './FullResultsButton';
 import PegRNA from './PegRNA';
 import Pe3sgRNA from './Pe3sgRNA';
+import SpacersgRNA from './SpacersgRNA';
 
 const Step5 = () => {
   const { step } = useStep();
@@ -14,6 +15,8 @@ const Step5 = () => {
           <Segment color={step === 4 ? 'grey' : undefined}>
             <h2>Cloning</h2>
             <PegRNA />
+            <div style={{ height: 15 }} />
+            <SpacersgRNA />
             <div style={{ height: 15 }} />
             <Pe3sgRNA />
             <div style={{ height: 15 }} />

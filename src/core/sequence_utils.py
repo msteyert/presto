@@ -50,13 +50,17 @@ AMBIGUOUS_BASES = {
     "B": "[C,G,T]",
 }
 
-FIVE_PRIME_FILLER = (
-    "GTGAGCAAGGGCGAGGAGGACATGGTCGTACCGTCACGCTTGCCATCATGGGTTATTGTCTCATGAG"
-)
+# FIVE_PRIME_FILLER = (
+#     "GTGAGCAAGGGCGAGGAGGACATGGTCGTACCGTCACGCTTGCCATCATGGGTTATTGTCTCATGAG"
+# )
+FIVE_PRIME_FILLER = "__REPLACE_WITH_REAL_FILLER__" * 10
 THREE_BP_BBSI = "CGGGAAGACCTCACC"
 CAS9_SCAFFOLD = "GTTTCAGAGCTATGCTGGAAACAGCATAGCAAGTTGAAATAAGGCTAGTCCGTTATCAACTTGAAAAAGTGGCACCGAGTCGGTGC"
 TERM_BBSI_3BP = "TTTTGCCGGTCTTCTAA"
-THREE_PRIME_FILLER = "TGGTTTCTTAGACGTCACTCTCGTCACCGTCGTGAAGCACCGGCGGCATGGACGAGCTGTACAAG"
+# THREE_PRIME_FILLER = (
+#     "TGGTTTCTTAGACGTCACTCTCGTCACCGTCGTGAAGCACCGGCGGCATGGACGAGCTGTACAAG"
+# )
+THREE_PRIME_FILLER = "__REPLACE_WITH_REAL_FILLER__" * 10
 SENSE_PE3_OVERHANG = "CACC"
 ANTISENSE_PE3_OVERHANG = "AAAC"
 
@@ -291,13 +295,18 @@ def build_untrimmed_pegRNA(spacer: str, rtt: str, pbs: str):
     return f"{FIVE_PRIME_FILLER}{THREE_BP_BBSI}{spacer}{CAS9_SCAFFOLD}{rtt}{pbs}{TERM_BBSI_3BP}{THREE_PRIME_FILLER}"
 
 
-def trim_sequence(sequence: str, target_length: int = 250):
+def trim_sequence(sequence: str, target_length: int = 300):
     """trims sequence to desired length by symetrically removing bases from the 5' and 3' ends.
     If the sequence is already under the target length, it is returned unchanged. If the sequence
     is an odd number length, the 5 prime end is trimmed down one extra base to reach the
     target length"""
+    print(f"sequence length: {len(sequence)}")
     if len(sequence) <= target_length:
-        return sequence
+        return {
+            "sequence": sequence,
+            "five_prime_filler": FIVE_PRIME_FILLER,
+            "three_prime_filler": THREE_PRIME_FILLER,
+        }
     bases_to_trim = (len(sequence) - target_length) / 2
     five_prime_trim = ceil(bases_to_trim)
     three_prime_trim = floor(bases_to_trim)
@@ -335,7 +344,7 @@ def build_final_pegRNA(spacer: str, rtt: str, pbs: str):
                 "start": three_bp_bbsi_start,
                 "end": spacer_start,
                 "color": ANNOTATION_COLORS[1],
-                "name": "three_bp_bbsi",
+                "name": "bbsi",
                 "sequence": THREE_BP_BBSI,
             },
             {
@@ -369,8 +378,8 @@ def build_final_pegRNA(spacer: str, rtt: str, pbs: str):
             {
                 "start": term_bbsi_3bp_start,
                 "end": three_prime_filler_start,
-                "color": ANNOTATION_COLORS[6],
-                "name": "term_bbsi_3bp",
+                "color": ANNOTATION_COLORS[1],
+                "name": "bbsi",
                 "sequence": TERM_BBSI_3BP,
             },
             {
@@ -384,8 +393,8 @@ def build_final_pegRNA(spacer: str, rtt: str, pbs: str):
     }
 
 
-def build_pe3_sgRNA(sequence: str):
-    """builds the sense and antisense pe3 sgRNA from the given pe3 sequence"""
+def build_sgRNA(sequence: str):
+    """builds sense and antisense sgRNA from the given sequence"""
     if sequence[0].lower() != "G":
         sequence = f"G{sequence}"
     return {

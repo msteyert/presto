@@ -76,6 +76,10 @@ export type GlobalState = {
     sense: string;
     antisense: string;
   };
+  spacersgRNA: {
+    sense: string;
+    antisense: string;
+  };
   warnings: {
     general: string[];
     pegRna: string[];
@@ -87,5 +91,5 @@ export type GlobalState = {
   step4Loading: boolean;
   step5Loading: boolean;
   cloningStrategy: string;
-  step3Advanced: boolean
+  step3Advanced: boolean;
 };

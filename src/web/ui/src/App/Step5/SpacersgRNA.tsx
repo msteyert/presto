@@ -1,14 +1,9 @@
 import React, { Fragment } from 'react';
 import Copy from '../../components/Copy';
-import {
-  usePe3sgRNA,
-  useSequencePredictions,
-  useCloningStrategy,
-} from '../../hooks';
+import { useSequencePredictions, useCloningStrategy } from '../../hooks';
 
-const Pe3sgRNA = () => {
-  const { pe3Options } = useSequencePredictions();
-  const { pe3sgRNA } = usePe3sgRNA();
+const SpacersgRNA = () => {
+  const { spacersgRNA, pe3Options } = useSequencePredictions();
   const { cloningStrategy } = useCloningStrategy();
 
   return (
@@ -19,13 +14,13 @@ const Pe3sgRNA = () => {
             <div className="field-group">
               <div>
                 <span className="field-label">
-                  PE3 {cloningStrategy !== 'None' ? 'sense' : ''}:
+                  Spacer {cloningStrategy !== 'None' ? 'sense' : ''}:
                 </span>
-                <Copy value={pe3sgRNA.sense} />
+                <Copy value={spacersgRNA.sense} />
               </div>
               <p>
-                <span className="generic-output-sequence">
-                  {pe3sgRNA.sense}
+                <span className="spacer-output-sequence">
+                  {spacersgRNA.sense}
                 </span>
               </p>
             </div>
@@ -34,12 +29,12 @@ const Pe3sgRNA = () => {
             <div style={{ flexGrow: 1 }}>
               <div className="field-group">
                 <div>
-                  <span className="field-label">PE3 antisense:</span>
-                  <Copy value={pe3sgRNA.antisense} />
+                  <span className="field-label">Spacer antisense:</span>
+                  <Copy value={spacersgRNA.antisense} />
                 </div>
                 <p>
-                  <span className="generic-output-sequence">
-                    {pe3sgRNA.antisense}
+                  <span className="spacer-output-sequence">
+                    {spacersgRNA.antisense}
                   </span>
                 </p>
               </div>
@@ -51,4 +46,4 @@ const Pe3sgRNA = () => {
   );
 };
 
-export default Pe3sgRNA;
+export default SpacersgRNA;

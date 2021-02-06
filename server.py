@@ -12,8 +12,7 @@ from src.core.sequence_utils import (
     DEFAULT_PAM,
     DEFAULT_PBS_RANGE,
     build_final_pegRNA,
-    build_pe3_sgRNA,
-    build_untrimmed_pegRNA,
+    build_sgRNA,
     calcRtRange,
     clean_sequence,
     create_final_wtSeq,
@@ -28,7 +27,6 @@ from src.core.sequence_utils import (
     flip_strand_if_needed,
     get_defaulted_inputs,
     is_top_strand,
-    trim_sequence,
 )
 from src.core.csv import writeCsvFile
 from src.core.main import main
@@ -120,7 +118,12 @@ async def generate_pegrna(input: PegResultInput):
 
 @app.post("/generate/sgrna")
 async def generate_pegrna(input: Pe3ResultInput):
-    return build_pe3_sgRNA(input.pe3)
+    return build_sgRNA(input.pe3)
+
+
+@app.post("/generate/spacer_sgrna")
+async def generate_pegrna(input: PegInput):
+    return build_sgRNA(input.spacer)
 
 
 @app.post("/generate/spacers")

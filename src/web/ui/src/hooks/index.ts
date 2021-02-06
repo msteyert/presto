@@ -6,9 +6,15 @@ import {
   generatePe3Options,
   generatePegRNA,
   generateSgRNA,
+  generateSpacerSgRNA,
   generateWarnings,
 } from '../api';
-import { GlobalState, PBSOption, PE3Option, TemplateOption } from '../types/presto';
+import {
+  GlobalState,
+  PBSOption,
+  PE3Option,
+  TemplateOption,
+} from '../types/presto';
 import { createGlobalState } from 'react-hooks-global-state';
 
 const initialState: GlobalState = {
@@ -34,6 +40,7 @@ const initialState: GlobalState = {
   step: 0,
   pegRNA: null,
   pe3sgRNA: { sense: '', antisense: '' },
+  spacersgRNA: { sense: '', antisense: '' },
   warnings: {
     general: [],
     pegRna: [],
@@ -44,11 +51,13 @@ const initialState: GlobalState = {
   step3Loading: false,
   step4Loading: false,
   step5Loading: false,
-  cloningStrategy: "Richardson",
-  step3Advanced: false
+  cloningStrategy: 'Richardson & Steyert et al. 2021',
+  step3Advanced: false,
 };
 
-export const { useGlobalState, getGlobalState } = createGlobalState(initialState);
+export const { useGlobalState, getGlobalState } = createGlobalState(
+  initialState,
+);
 
 export function useSequencePredictions() {
   const [templateOptions, setTemplateOptions] = useGlobalState(
@@ -69,6 +78,7 @@ export function useSequencePredictions() {
   const [pe3Options, setPe3Options] = useGlobalState('pe3Options');
   const [pegRNA, setPegRNA] = useGlobalState('pegRNA');
   const [pe3sgRNA, setPe3sgRNA] = useGlobalState('pe3sgRNA');
+  const [spacersgRNA, setSpacersgRNA] = useGlobalState('spacersgRNA');
   const [selectedSpacerOption, setSelectedSpacerOption] = useGlobalState(
     'selectedSpacerOption',
   );
@@ -199,12 +209,16 @@ export function useSequencePredictions() {
 
   async function updateSgRNA() {
     const globalSelectedPe3Option = getGlobalState('selectedPe3Option');
+    const globalSpacer = getGlobalState('spacer');
     if (globalSelectedPe3Option) {
       const sgRNA = await generateSgRNA(
         globalSelectedPe3Option.secondGuide.toUpperCase(),
       );
       setPe3sgRNA(sgRNA);
     }
+
+    const spacersgRNA = await generateSpacerSgRNA(globalSpacer);
+    setSpacersgRNA(spacersgRNA);
   }
 
   return {
@@ -222,9 +236,11 @@ export function useSequencePredictions() {
     pe3Options,
     pegRNA,
     pe3sgRNA,
+    spacersgRNA,
     warnings,
     setSpacer,
     selectedTemplateOption,
+    selectedPe3Option,
     updateSelectedTemplateOption,
     updateSelectedPbsOption,
     updateSelectedPe3Option,
@@ -442,7 +458,9 @@ export function useStep5Loading() {
 }
 
 export function useCloningStrategy() {
-  const [cloningStrategy, setCloningStrategy] = useGlobalState('cloningStrategy');
+  const [cloningStrategy, setCloningStrategy] = useGlobalState(
+    'cloningStrategy',
+  );
   return {
     cloningStrategy,
     setCloningStrategy,

@@ -46,7 +46,7 @@ const PegRNA = () => {
         <div style={{ marginTop: 30 }}>
           <div className="field-group">
             <div style={{ display: 'flex', flexDirection: 'row' }}>
-              Final pegRNA:
+              <span className="field-label">Final pegRNA:</span>
               <Copy
                 value={getSequence(
                   getCloningStrategyAnnotations(
