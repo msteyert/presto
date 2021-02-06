@@ -124,6 +124,9 @@ def main(inputs):
             )
             break
 
+    # TODO add warning if the typeIIs sequence is found (see functions is_typeIIs_Anzalone and is_typeIIs_Richardson in sequence_utils)
+    #  "pegRNA contains restriction enzyme cut site and will be destroyed during assembly. Consider alternative cloning strategy."
+
     # Returned values
     return {
         "spacerMatchesOn": "top" if isTopStrand else "bottom",
