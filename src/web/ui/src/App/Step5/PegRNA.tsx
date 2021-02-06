@@ -24,7 +24,7 @@ const getCloningStrategyAnnotations = (
 ) =>
   annotations.filter((a) =>
     cloningStrategy === 'None'
-      ? ['rtt', 'pbs', 'spacer'].includes(a.name)
+      ? ['rtt', 'pbs', 'spacer', 'cas9_scaffold'].includes(a.name)
       : true,
   );
 

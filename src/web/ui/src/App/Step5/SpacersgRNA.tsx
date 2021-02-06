@@ -3,7 +3,11 @@ import Copy from '../../components/Copy';
 import { useSequencePredictions, useCloningStrategy } from '../../hooks';
 
 const SpacersgRNA = () => {
-  const { spacersgRNA, pe3Options } = useSequencePredictions();
+  const {
+    spacersgRNA,
+    pe3Options,
+    selectedSpacerOption,
+  } = useSequencePredictions();
   const { cloningStrategy } = useCloningStrategy();
 
   return (
@@ -16,11 +20,19 @@ const SpacersgRNA = () => {
                 <span className="field-label">
                   Spacer {cloningStrategy !== 'None' ? 'sense' : ''}:
                 </span>
-                <Copy value={spacersgRNA.sense} />
+                <Copy
+                  value={
+                    cloningStrategy !== 'None'
+                      ? spacersgRNA.sense
+                      : selectedSpacerOption?.spacer
+                  }
+                />
               </div>
               <p>
                 <span className="spacer-output-sequence">
-                  {spacersgRNA.sense}
+                  {cloningStrategy !== 'None'
+                    ? spacersgRNA.sense
+                    : selectedSpacerOption?.spacer}
                 </span>
               </p>
             </div>
